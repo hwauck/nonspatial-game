@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
 using System.IO;
+using System.Text;
 
 public class playerArrow : MonoBehaviour {
 	private GameObject SAB;
@@ -51,7 +52,8 @@ public class playerArrow : MonoBehaviour {
 	// number of times only the player moves
 	private int player_only_moves;
 
-	StreamWriter sr;
+	//StreamWriter sr;
+	string resultStr;
 
 	void Awake() {
 		victorious = false;
@@ -114,16 +116,19 @@ public class playerArrow : MonoBehaviour {
 		no = GameObject.Find ("No").GetComponent<Button>();
 		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
-
+		resultStr = "NEW_GAME__";
+		resultStr += "Gender:Female__";
+		resultStr += "Age:41__";
+		/*
 		//start file writing
 		if(File.Exists(FILENAME)) {
-			print ("File already exists: " + FILENAME);
+			print ("File already exists: " + perfileName);
 		}
 		sr = File.CreateText (FILENAME);
 		sr.WriteLine ("NEW GAME");
 		sr.WriteLine ("Gender: Female");
 		sr.WriteLine ("Age: 41");
-
+		*/
 	}
 
 	public IList<string> getSquaresExplored() {
@@ -288,7 +293,8 @@ public class playerArrow : MonoBehaviour {
 		transform.Translate(direction * 2f, Space.World);
 		num_traversed_squares++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
-		sr.Write (predictedSquareName);
+		resultStr += predictedSquareName;
+		//sr.Write (predictedSquareName);
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
 		if(!squares_explored_list.Contains(predictedSquareName)) {
@@ -302,8 +308,8 @@ public class playerArrow : MonoBehaviour {
 	}
 
 	public void reset() {
-		sr.WriteLine ("RESET\n");
-		sr.Flush ();
+		resultStr += "RESET" + "__";
+		StartCoroutine(SendSaveResult());
 		if(victorious) {
 			victorious = false;
 		}
@@ -400,17 +406,18 @@ public class playerArrow : MonoBehaviour {
 		avg_time_per_move = avg_time_per_move/moves;
 		avg_repeats_per_square = num_repeated_squares/(num_traversed_squares * 1.0f);
 		avg_turns_per_move = avg_turns_per_move/(moves * 1.0f);
-		sr.WriteLine ("TOTAL_TIME, " + (Time.time - startTime).ToString ());
-		sr.WriteLine ("TOTAL_MOVES, " + moves);
-		sr.WriteLine ("AVG_TIME_PER_MOVE, " + avg_time_per_move.ToString());
-		sr.WriteLine ("AVG_TURNS_PER_MOVE, " + avg_turns_per_move.ToString());
-		sr.WriteLine ("SQUARES_EXPLORED, " + squares_explored_list.Count);
-		sr.WriteLine ("NUM_REPEATED_SQUARES, " + num_repeated_squares);
-		sr.WriteLine ("AVG_REPEATS_PER_SQUARE, " + avg_repeats_per_square);
-		sr.WriteLine ("ALL_MOVE, " + all_move.ToString());
-		sr.WriteLine ("TWO_MOVE, " + two_move.ToString());
-		sr.WriteLine ("ONE_MOVE, " + player_only_moves.ToString());
-		sr.WriteLine ("LEFT_RIGHT_SYMMETRY, " + (left_squares / (right_squares * 1.0f)));
+		resultStr += "TOTAL_TIME," + (Time.time - startTime).ToString () +"__";
+		resultStr +="TOTAL_TIME," + (Time.time - startTime).ToString ()+"__";
+		resultStr +="TOTAL_MOVES," + moves+"__";
+		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+"__";
+		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move.ToString()+"__";
+		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+"__";
+		resultStr +="NUM_REPEATED_SQUARES," + num_repeated_squares+"__";
+		resultStr +="AVG_REPEATS_PER_SQUARE," + avg_repeats_per_square+"__";
+		resultStr +="ALL_MOVE," + all_move.ToString()+"__";
+		resultStr +="TWO_MOVE," + two_move.ToString()+"__";
+		resultStr +="ONE_MOVE," + player_only_moves.ToString()+"__";
+		resultStr +="LEFT_RIGHT_SYMMETRY," + (left_squares / (right_squares * 1.0f))+"__";
 	}
 
 	private void countLeftRightSymmetry(string newLoc) {
@@ -455,27 +462,27 @@ public class playerArrow : MonoBehaviour {
 					
 					if(errorsBottom[1]) {
 						//if there is a statue collision
-						sr.WriteLine (",-1,-1");
+						resultStr +=",-1,-1__";
 						StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.1f));
 					} else if (errorsBottom[2]) {
 						//if there is a statue blocking
-						sr.WriteLine (",-1,-1");
+						resultStr +=",-1,-1__";
 						StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.05f));
 					}else {
 						bool[] errorsTop = statueArrowTop.getErrorType();
 						if(!errorsBottom[0]) {
 							//not offscreen
 							string newLocStatue = statueArrowBottom.move();
-							sr.Write ("," + newLocStatue);
+							resultStr +="," + newLocStatue+ "__";
 						} else {
-							sr.Write (",-1");
+							resultStr +=",-1__";
 						}
 						if(!errorsTop[0]) {
 							// not offscreen
 							string newLocStatue = statueArrowTop.move();
-							sr.WriteLine ("," + newLocStatue);
+							resultStr +="," + newLocStatue+"__";
 						} else {
-							sr.WriteLine (",-1");
+							resultStr +=",-1"+"__";
 						}
 					}
 				} else if(errorsPlayer[1]) {
@@ -497,8 +504,8 @@ public class playerArrow : MonoBehaviour {
 				quit ();
 			} else if(victory()) {
 				logEndGameData ();
-				sr.WriteLine ("VICTORY\n");
-				sr.Flush ();
+				resultStr +="VICTORY__";
+				StartCoroutine(SendSaveResult());
 				//change later to allow player to play a new game
 				displayOptions();
 			}
@@ -507,10 +514,20 @@ public class playerArrow : MonoBehaviour {
 	}
 
 	public void quit() {
-		sr.WriteLine ("QUIT\n");
-		sr.Flush ();
-		sr.Close ();
+		resultStr +="QUIT__";
+		StartCoroutine(SendSaveResult());
 		Application.Quit();
+	}
+
+	IEnumerator SendSaveResult()
+	{
+		string sendurl = "http://ylee267.web.engr.illinois.edu/SaveData.php?savedata=\"";
+		sendurl += resultStr + "\"";
+		WWW www = new WWW(sendurl);
+		
+		// Wait for download to complete
+		yield return www;
+		Debug.Log (sendurl);
 	}
 
 
