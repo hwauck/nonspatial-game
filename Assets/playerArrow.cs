@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 using System.IO;
 using System.Text;
+using UnityEngine.SceneManagement;
 
 public class playerArrow : MonoBehaviour {
 	private GameObject SAB;
@@ -308,8 +309,6 @@ public class playerArrow : MonoBehaviour {
 	}
 
 	public void reset() {
-		resultStr += "RESET" + "__";
-		StartCoroutine(SendSaveResult());
 		if(victorious) {
 			victorious = false;
 		}
@@ -498,10 +497,14 @@ public class playerArrow : MonoBehaviour {
 				}
 			} else if (Input.GetKeyDown (KeyCode.R)) {
 				logEndGameData();
+				resultStr += "RESET" + "__";
+				StartCoroutine(SendSaveResult());
 				reset();
 			} else if (Input.GetKeyDown(KeyCode.Escape)) {
 				logEndGameData();
-				quit ();
+				resultStr +="QUIT__";
+				StartCoroutine(SendSaveResult());
+				SceneManager.LoadScene("postgame_survey");
 			} else if(victory()) {
 				logEndGameData ();
 				resultStr +="VICTORY__";
@@ -513,10 +516,9 @@ public class playerArrow : MonoBehaviour {
 
 	}
 
+	//player clicks "No" on the "Do you want to play again?" question
 	public void quit() {
-		resultStr +="QUIT__";
-		StartCoroutine(SendSaveResult());
-		Application.Quit();
+		SceneManager.LoadScene("postgame_survey");
 	}
 
 	IEnumerator SendSaveResult()

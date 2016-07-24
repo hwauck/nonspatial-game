@@ -50,6 +50,7 @@
      <Compile Include="Assets\consentForm.cs" />
      <Compile Include="Assets\playerArrow.cs" />
      <Compile Include="Assets\playerArrowOld.cs" />
+     <Compile Include="Assets\postgameSurvey.cs" />
      <Compile Include="Assets\pregameSurvey.cs" />
      <Compile Include="Assets\square.cs" />
      <Compile Include="Assets\statueArrow.cs" />

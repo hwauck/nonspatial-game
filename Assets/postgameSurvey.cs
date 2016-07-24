@@ -2,19 +2,19 @@
 using System.Collections;
 using UnityEngine.SceneManagement;
 
-public class pregameSurvey : MonoBehaviour {
+public class postgameSurvey : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
 	
 	}
 
-	public void loadGame() {
-		// save gender, age, game experience, repeated plays to resultStr/database
-		SceneManager.LoadScene("puzzle");
+	public void loadThankYouSurvey() {
+		// save how fun/easy/boring/frustrating answers to resultStr/database
+		SceneManager.LoadScene("thankyou_screen");
 
 	}
-
+	
 	// Update is called once per frame
 	void Update () {
 	

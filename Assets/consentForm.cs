@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class consentForm : MonoBehaviour {
 
@@ -14,7 +15,7 @@ public class consentForm : MonoBehaviour {
 
 	public void loadPregameSurvey() {
 		if(iAgree.isOn) {
-			Application.LoadLevel(1);
+			SceneManager.LoadScene("pregame_survey");
 		} else {
 			errorMustConsent.enabled = true;
 		}
