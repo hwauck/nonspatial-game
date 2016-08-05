@@ -4,7 +4,7 @@ using System.Collections;
 public class statueArrow : MonoBehaviour {
 	public GameObject OS;
 	private statueArrow otherStatue; 
- 	public Vector2 direction;
+ 	public Vector3 direction;
 	private Vector3 right;
 	private Vector3 left;
 	private Vector3 up;

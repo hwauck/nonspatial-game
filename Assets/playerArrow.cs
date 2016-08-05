@@ -38,7 +38,7 @@ public class playerArrow : MonoBehaviour {
 	private int left_squares;
 	private int right_squares;
 	private int num_repeated_squares;
-	private int num_traversed_squares;
+	private int num_traversed_squares; // total displacement, including repeated squares
 	private int squares_explored;
 	private float avg_repeats_per_square;
 	private float avg_time_per_move;
@@ -79,6 +79,7 @@ public class playerArrow : MonoBehaviour {
 		predictedSquare = new Vector2(2,2);
 
 		//Data collection variables
+		resultStr = "";
 		moves = 0;
 		turnCount = 0;
 		avg_time_per_move = 0f;
@@ -121,19 +122,7 @@ public class playerArrow : MonoBehaviour {
 		no = GameObject.Find ("No").GetComponent<Button>();
 		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
-		resultStr = "NEW_GAME__";
-		resultStr += "Gender:Female__";
-		resultStr += "Age:41__";
-		/*
-		//start file writing
-		if(File.Exists(FILENAME)) {
-			print ("File already exists: " + perfileName);
-		}
-		sr = File.CreateText (FILENAME);
-		sr.WriteLine ("NEW GAME");
-		sr.WriteLine ("Gender: Female");
-		sr.WriteLine ("Age: 41");
-		*/
+
 	}
 
 	public IList<string> getSquaresExplored() {
@@ -299,7 +288,6 @@ public class playerArrow : MonoBehaviour {
 		num_traversed_squares++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
 		resultStr += predictedSquareName;
-		//sr.Write (predictedSquareName);
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
 		if(!squares_explored_list.Contains(predictedSquareName)) {

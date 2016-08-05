@@ -68,6 +68,7 @@ public class dataCollector : MonoBehaviour {
 	IEnumerator saveAllData() {
 		//TODO
 		// What if the player leaves these blank? Do they have a "default" value?
+		//SANITIZE INPUT
 		string allData = "NEW_GAME__";
 		allData += "Gender:" + gender + "__";
 		allData += "Age:" + age + "__";

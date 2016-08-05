@@ -49,6 +49,8 @@
      <Compile Include="Assets\GameManager.cs" />
      <Compile Include="Assets\consentForm.cs" />
      <Compile Include="Assets\dataCollector.cs" />
+     <Compile Include="Assets\iceBlockScripts\iceBlock.cs" />
+     <Compile Include="Assets\iceBlockScripts\playerController.cs" />
      <Compile Include="Assets\playerArrow.cs" />
      <Compile Include="Assets\playerArrowOld.cs" />
      <Compile Include="Assets\postgameSurvey.cs" />
