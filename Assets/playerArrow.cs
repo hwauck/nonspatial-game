@@ -39,12 +39,14 @@ public class playerArrow : MonoBehaviour {
 	private int right_squares;
 	private int num_repeated_squares;
 	private int num_traversed_squares;
+	private int squares_explored;
 	private float avg_repeats_per_square;
 	private float avg_time_per_move;
 	private float avg_turns_per_move;
 	private IList<string> squares_explored_list;
 	private IList<string> left_squares_list;
 	private IList<string> right_squares_list;
+	private float left_right_symmetry;
 
 	// number of times all statues and player move
 	private int all_move;
@@ -85,6 +87,7 @@ public class playerArrow : MonoBehaviour {
 		squares_explored_list.Add ("23");
 		left_squares = 0;
 		right_squares = 0;
+		squares_explored = 0;
 		num_repeated_squares = 0;
 		num_traversed_squares = 0;
 
@@ -108,6 +111,7 @@ public class playerArrow : MonoBehaviour {
 		right_squares_list.Add ("33");
 		right_squares_list.Add ("34");
 
+		left_right_symmetry = -1f;
 		all_move = 0;
 		two_move = 0;
 		player_only_moves = 0;
@@ -405,18 +409,25 @@ public class playerArrow : MonoBehaviour {
 		avg_time_per_move = avg_time_per_move/moves;
 		avg_repeats_per_square = num_repeated_squares/(num_traversed_squares * 1.0f);
 		avg_turns_per_move = avg_turns_per_move/(moves * 1.0f);
-		resultStr += "TOTAL_TIME," + (Time.time - startTime).ToString () +"__";
 		resultStr +="TOTAL_TIME," + (Time.time - startTime).ToString ()+"__";
+		game_time = (Time.time - startTime);
 		resultStr +="TOTAL_MOVES," + moves+"__";
 		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+"__";
 		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move.ToString()+"__";
 		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+"__";
+		squares_explored = squares_explored_list.Count;
 		resultStr +="NUM_REPEATED_SQUARES," + num_repeated_squares+"__";
 		resultStr +="AVG_REPEATS_PER_SQUARE," + avg_repeats_per_square+"__";
+
+		resultStr += "LEFT_SQUARES," + left_squares + "__";
+		resultStr += "RIGHT_SQUARES," + right_squares + "__";
+		resultStr +="LEFT_RIGHT_SYMMETRY," + (left_squares / (right_squares * 1.0f))+"__";
+		left_right_symmetry = (left_squares / (right_squares * 1.0f));
+
 		resultStr +="ALL_MOVE," + all_move.ToString()+"__";
 		resultStr +="TWO_MOVE," + two_move.ToString()+"__";
 		resultStr +="ONE_MOVE," + player_only_moves.ToString()+"__";
-		resultStr +="LEFT_RIGHT_SYMMETRY," + (left_squares / (right_squares * 1.0f))+"__";
+
 	}
 
 	private void countLeftRightSymmetry(string newLoc) {
@@ -495,20 +506,10 @@ public class playerArrow : MonoBehaviour {
 						StartCoroutine (collisionHelperOneSided(this.gameObject, SAT, transform.position, 0.05f));
 					}
 				}
-			} else if (Input.GetKeyDown (KeyCode.R)) {
-				logEndGameData();
-				resultStr += "RESET" + "__";
-				StartCoroutine(SendSaveResult());
-				reset();
-			} else if (Input.GetKeyDown(KeyCode.Escape)) {
-				logEndGameData();
-				resultStr +="QUIT__";
-				StartCoroutine(SendSaveResult());
-				SceneManager.LoadScene("postgame_survey");
 			} else if(victory()) {
 				logEndGameData ();
 				resultStr +="VICTORY__";
-				StartCoroutine(SendSaveResult());
+				SendSaveResult();
 				//change later to allow player to play a new game
 				displayOptions();
 			}
@@ -516,20 +517,29 @@ public class playerArrow : MonoBehaviour {
 
 	}
 
+	public void saveAndReset() {
+		logEndGameData();
+		resultStr += "RESET__";
+		SendSaveResult();
+		reset();
+	}
+
+	public void saveAndQuit() {
+		logEndGameData();
+		resultStr +="QUIT__";
+		SendSaveResult();
+		SceneManager.LoadScene("postgame_survey");
+	}
+
 	//player clicks "No" on the "Do you want to play again?" question
 	public void quit() {
 		SceneManager.LoadScene("postgame_survey");
 	}
 
-	IEnumerator SendSaveResult()
+	private void SendSaveResult()
 	{
-		string sendurl = "http://ylee267.web.engr.illinois.edu/SaveData.php?savedata=\"";
-		sendurl += resultStr + "\"";
-		WWW www = new WWW(sendurl);
-		
-		// Wait for download to complete
-		yield return www;
-		Debug.Log (sendurl);
+		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+
 	}
 
 
