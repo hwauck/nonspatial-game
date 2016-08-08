@@ -6,9 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class playerController : MonoBehaviour {
 
-	public iceBlock ice1;
-	public iceBlock ice2;
-	public iceBlock ice3;
+	public iceBlock[] ices;
 
 	private Vector3 direction;
 	private Vector3 right;
@@ -92,7 +90,7 @@ public class playerController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		direction = new Vector3(0,0,0);
+		direction = Vector3.right;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
@@ -271,8 +269,10 @@ public class playerController : MonoBehaviour {
 	}
 
 	private bool offScreen() {
-		if(GameObject.Find ("Block" + predictedSquare.x + "" + predictedSquare.y) == null) {
+		if(GameObject.Find ("Block" + coordinatesToSquare(predictedSquare)) == null) {
 			// can't move - offscreen
+			Debug.Log("Can't find Block" + coordinatesToSquare(predictedSquare));
+
 			return true;
 		}
 		return false;
@@ -285,47 +285,67 @@ public class playerController : MonoBehaviour {
 		for(int i = 0; i < 2; i++) {
 			errors[i] = false;
 		}
-//		if(offScreen ()) {
-//			errors[0] = true;
-//		} else if (blockedByIce()) {
-//			errors[1] = true;
-//		} 
+		if(offScreen ()) {
+			errors[0] = true;
+
+		} else if (blockedByIce()) {
+			errors[1] = true;
+		} 
 		return errors;
 	}
 
 	public string move() {
-		//TODO
-		//if this is a push, set ice block's direction to player direction
-		return "";
+		transform.Translate(direction * 2f, Space.World);
+		num_traversed_squares_player++;
+		string predictedSquareName = coordinatesToSquare(predictedSquare);
+		resultStr += predictedSquareName;
+		Vector3 oldSquare = square; 
+		square = predictedSquare; 
+		if(!squares_explored_player_list.Contains(predictedSquareName)) {
+			squares_explored_player_list.Add(predictedSquareName);
+		} else {
+			num_repeated_squares_player++;
+		}
+		predictedSquare.x = 2f * square.x - oldSquare.x; 
+		predictedSquare.y = 2f * square.y - oldSquare.y; 
+		return predictedSquareName;
+
 	}
 
 	public void turnDown(){
 		direction = Vector3.down;
 		transform.rotation = Quaternion.Euler(down);
-		predictedSquare.x = square.x;
-		predictedSquare.y = square.y + 1;
+		predictedSquare.x = square.x + 1;
+		predictedSquare.y = square.y;
+		Debug.Log("turned DOWN: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
+
 	}
 
 	public void turnUp(){
 		direction = Vector3.up;
 		transform.rotation = Quaternion.Euler(up);
-		predictedSquare.x = square.x;
-		predictedSquare.y = square.y - 1;
+		predictedSquare.x = square.x - 1;
+		predictedSquare.y = square.y;
+		Debug.Log("turned UP: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
 
 	}
 
 	public void turnLeft(){
 		direction = Vector3.left;
 		transform.rotation = Quaternion.Euler(left);
-		predictedSquare.x = square.x - 1;
-		predictedSquare.y = square.y;
+		predictedSquare.x = square.x;
+		predictedSquare.y = square.y - 1;
+		Debug.Log("turned LEFT: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
+
 	}
 
 	public void turnRight(){
 		direction = Vector3.right;
 		transform.rotation = Quaternion.Euler(right);
-		predictedSquare.x = square.x + 1;
-		predictedSquare.y = square.y;
+		predictedSquare.x = square.x;
+		predictedSquare.y = square.y + 1;
+		Debug.Log("turned RIGHT: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
+
 	}
 
 	public void reset() {
@@ -425,25 +445,28 @@ public class playerController : MonoBehaviour {
 				logMoveData ();
 				bool[] errorsPlayer = getErrorType ();
 				if(!errorsPlayer[0] && !errorsPlayer[1]) {
-					string newLoc = move ();
+					string newLoc = move();
 					moves++;
 					countLeftRightSymmetry(newLoc);
 					countTopBottomSymmetry(newLoc);
-//					bool[] errorsIce1 = ice1.getErrorType ();
-//					bool[] errorsIce2 = ice2.getErrorType ();
-//					bool[] errorsIce3 = ice3.getErrorType ();
-//
-//					if(errorsIce1[1]) {
-//						//TODO
-//					} else if (errorsIce1[2]) {
-//						//TODO
-//					}else { 
-//						//TODO
-//					}
+
 				} else if(errorsPlayer[1]) {
-					//if player blocked by ice
+					//if player blocked by ice, move ice if possible
 					//TODO
-				} 
+					Debug.Log("Blocked by ice");
+
+					//check each iceBlock to see if the player
+					foreach(iceBlock i in ices) {
+						if(predictedSquare == i.square) {
+							// player just tried to push ice block
+							push(i);
+						}
+
+					}
+
+				} else if(errorsPlayer[0]) {
+					Debug.Log("ERROR: Blocked by offscreen");
+				}
 			} else if(victory()) {
 				logEndGameData ();
 				resultStr +="VICTORY__";
@@ -455,5 +478,16 @@ public class playerController : MonoBehaviour {
 
 	}
 
+	private void push(iceBlock ice) {
+		ice.getPushed();
+	}
 
+	private bool blockedByIce() {
+		foreach(iceBlock i in ices) {
+			if(predictedSquare == i.square) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

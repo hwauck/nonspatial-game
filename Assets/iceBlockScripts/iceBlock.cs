@@ -34,7 +34,7 @@ public class iceBlock : MonoBehaviour {
 
 	public bool canMove() {
 		//TODO
-		//	return !offScreen () && !blockedByIce();
+		return !offScreen () && !blockedByIce();
 		return false;
 	}
 
@@ -82,6 +82,13 @@ public class iceBlock : MonoBehaviour {
 			errors[3] = true;
 		}
 		return errors;
+	}
+
+	public void getPushed() {
+		if(!offScreen() && !blockedByIce()) {
+			//no blockages - ice block can be pushed
+			move();
+		} 
 	}
 
 	public string moveOneSquare() {
