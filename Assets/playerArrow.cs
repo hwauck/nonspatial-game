@@ -32,7 +32,8 @@ public class playerArrow : MonoBehaviour {
 	private int moves;
 	private float startTime;
 	private float prevMoveEndTime;
-	private int turnCount;
+	private int turns;
+	private int currentTurns; //number of turns since last move
 	private float game_time;
 	//ratio: # moves on left side of board/# moves of right side
 	private int left_squares;
@@ -81,7 +82,8 @@ public class playerArrow : MonoBehaviour {
 		//Data collection variables
 		resultStr = "";
 		moves = 0;
-		turnCount = 0;
+		turns = 0;
+		currentTurns = 0;
 		avg_time_per_move = 0f;
 		avg_turns_per_move = 0f;
 		squares_explored_list = new List<string>();
@@ -364,8 +366,8 @@ public class playerArrow : MonoBehaviour {
 		float currentMoveTime = currentTime - prevMoveEndTime;
 		avg_time_per_move += currentMoveTime;
 		prevMoveEndTime = currentTime;
-		avg_turns_per_move += turnCount;
-		turnCount = 0;
+		avg_turns_per_move += currentTurns;
+		currentTurns = 0;
 		if(canMove() && statueArrowBottom.canMove() && statueArrowTop.canMove ()) {
 			Debug.Log ("ALL_MOVE");
 			all_move++;
@@ -430,22 +432,30 @@ public class playerArrow : MonoBehaviour {
 	void Update () {
 		if(!victorious) {
 			if (Input.GetKeyDown (KeyCode.DownArrow)) {
-				turnCount++;
+				turns++;
+				currentTurns++;
+
 				turnDown ();
 				statueArrowBottom.turnDown ();
 				statueArrowTop.turnUp ();
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-				turnCount++;
+				turns++;
+				currentTurns++;
+
 				turnUp ();
 				statueArrowBottom.turnUp ();
 				statueArrowTop.turnDown ();
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				turnCount++;
+				turns++;
+				currentTurns++;
+
 				turnRight ();
 				statueArrowBottom.turnRight ();
 				statueArrowTop.turnLeft ();
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-				turnCount++;
+				turns++;
+				currentTurns++;
+
 				turnLeft ();
 				statueArrowBottom.turnLeft ();
 				statueArrowTop.turnRight ();

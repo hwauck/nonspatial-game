@@ -29,10 +29,13 @@ public class playerController : MonoBehaviour {
 	private int actions; //number of times player either moves or pushes
 	private int moves; 	//number of times player moves from one square to another
 	private int pushes; 	//number of times player attempts to push an ice block
-	private int turns;	//number of ties player changes direction
+	private int successfulPushes; // number of times player pushes ice block and it moves
+	private int turns;	//number of times player changes direction
 	private float avg_turns_per_move;
+	private float avg_turns_per_action;
+	private float avg_turns_per_push;
 
-	/* "ERROR" DATA - PUT THIS IN iceBlock.cs */
+	/* ICE BLOCK "ERROR" DATA */
 	private int iceCantMove; 	// number of times player tries to push ice block but something is in the way
 	private int iceBlockedByIce; // ice block doesn't move due to presence of other ice block
 	private int iceBlockedByOffscreen; // ice block doesn't move due to it being on edge of screen
@@ -41,6 +44,8 @@ public class playerController : MonoBehaviour {
 
 	/* TIME DATA */
 	private float startTime;
+	private float prevActionEndTime;
+	private float prevPushEndTime;
 	private float prevMoveEndTime;
 	private float avg_time_per_action;
 	private float avg_time_per_push;
@@ -85,7 +90,9 @@ public class playerController : MonoBehaviour {
 	void Awake() {
 		victorious = false;
 		startTime = Time.time;
+		prevActionEndTime = startTime;
 		prevMoveEndTime = startTime;
+		prevPushEndTime = startTime;
 	}
 
 	// Use this for initialization
@@ -101,8 +108,12 @@ public class playerController : MonoBehaviour {
 		//Data collection variables
 		moves = 0;
 		turns = 0;
+		pushes = 0;
+		successfulPushes = 0;
 		avg_time_per_move = 0f;
 		avg_turns_per_move = 0f;
+		avg_turns_per_action = 0f;
+		avg_turns_per_push = 0f;
 
 		iceCantMove = 0; 	
 		iceBlockedByIce = 0; 
@@ -263,16 +274,9 @@ public class playerController : MonoBehaviour {
 		return false;
 	}
 
-	public bool canMove() {
-		//TODO
-		return false;
-	}
-
 	private bool offScreen() {
 		if(GameObject.Find ("Block" + coordinatesToSquare(predictedSquare)) == null) {
 			// can't move - offscreen
-			Debug.Log("Can't find Block" + coordinatesToSquare(predictedSquare));
-
 			return true;
 		}
 		return false;
@@ -317,7 +321,6 @@ public class playerController : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(down);
 		predictedSquare.x = square.x + 1;
 		predictedSquare.y = square.y;
-		Debug.Log("turned DOWN: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
 
 	}
 
@@ -326,7 +329,6 @@ public class playerController : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(up);
 		predictedSquare.x = square.x - 1;
 		predictedSquare.y = square.y;
-		Debug.Log("turned UP: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
 
 	}
 
@@ -335,7 +337,6 @@ public class playerController : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(left);
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y - 1;
-		Debug.Log("turned LEFT: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
 
 	}
 
@@ -344,7 +345,6 @@ public class playerController : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(right);
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y + 1;
-		Debug.Log("turned RIGHT: predictedSquare = Block" + predictedSquare.x + "" + predictedSquare.y);
 
 	}
 
@@ -359,30 +359,93 @@ public class playerController : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(right);
 		//TODO: reset all data collection vars
 		//TODO: reset all ice blocks
+		foreach(iceBlock i in ices) {
+			i.reset();
+		}
 
 		unDisplayOptions();
 
 	}
 
 	private bool victory() {
-//		string ice1Square = coordinatesToSquare(ice1.square);
-//		string ice2Square = coordinatesToSquare(ice2.square);
-//		string ice3Square = coordinatesToSquare(ice3.square);
-//		if(ice1Square.Equals ("34") || ice2Square.Equals("34") || ice3Square.Equals("34")) {
-//			victorious = true;
-//			return true;
-//		} else {
-//			return false;
-//		}
+		foreach(iceBlock i in ices) {
+			if(coordinatesToSquare(i.square).Equals ("34")) {
+				victorious = true;
+				return true;
+			} 
+		}
 		return false;
 	}
 
-	private void logMoveData() {
+	private void logActionData() {
 		//TODO 
+		//When a player takes an action (move or push), record the current time
+		// when the player next takes an action (move or push), record the current time
+		// subtract the previous action time from the current action time
+		actions++;
+		float currentTime = Time.time;
+		float currentActionTime = currentTime - prevActionEndTime;
+		avg_time_per_action += currentActionTime;
+		prevActionEndTime = currentTime;
+	}
+
+	private void logMoveData() {
+		moves++;
+		float currentTime = Time.time;
+		float currentMoveTime = currentTime - prevMoveEndTime;
+		avg_time_per_move += currentMoveTime;
+		prevMoveEndTime = currentTime;
+	}
+
+	private void logPushData() {
+		pushes++;
+		float currentTime = Time.time;
+		float currentPushTime = currentTime - prevPushEndTime;
+		avg_time_per_move += currentPushTime;
+		prevPushEndTime = currentTime;
 	}
 
 	private void logEndGameData(){
-		//TODO
+		/* MOVEMENT DATA */
+		avg_turns_per_action = actions / (1.0f * turns);
+		avg_turns_per_move = moves / (1.0f * turns);
+		avg_turns_per_push = pushes / (1.0f * turns);
+
+		/* ICE BLOCK DATA */
+		foreach(iceBlock i in ices) {
+			iceCantMove += i.getIceCantMove();
+			iceBlockedByIce += i.getIceBlockedByIce();
+			iceBlockedByOffscreen += i.getIceBlockedByOffscreen();
+			iceStoppedByOffscreen += i.getStoppedByOffscreen();
+			iceStoppedByIce += i.getStoppedByIce();
+		}
+
+		/* TIME DATA */
+		avg_time_per_action = avg_time_per_action/actions;
+		avg_time_per_move = avg_time_per_move/moves;
+		avg_time_per_push = avg_time_per_move/pushes;
+		game_time = (Time.time - startTime);
+
+		/* PLAYER LOCATION DATA */
+		squares_explored_player = getNumSquaresPlayerExplored(); // squares player has moved onto
+		avg_repeats_per_square_player = num_repeated_squares_player / 35f; // 35 is total size of board
+		left_right_symmetry_player = left_squares_player / (1.0f * right_squares_player);
+		top_bottom_symmetry_player = top_squares_player / (1.0f * bottom_squares_player);
+
+		/* ICE LOCATION DATA */
+//		private int left_squares_ice;
+//		private int right_squares_ice;
+//		private int top_squares_ice;
+//		private int bottom_squares_ice;
+//		private int num_repeated_squares_ice;
+//		private int num_traversed_squares_ice;
+//		private int squares_explored_ice; // squares ice blocks have moved onto/across
+//		private float avg_repeats_per_square_ice;
+//		private float left_right_symmetry_ice;
+//		private float top_bottom_symmetry_ice;
+//		private IList<string> squares_explored_ice_list;
+
+			
 	}
 
 	private void countLeftRightSymmetry(string newLoc) {
@@ -422,7 +485,7 @@ public class playerController : MonoBehaviour {
 
 	private void SendSaveResult()
 	{
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+	//	GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 
 	}
 		
@@ -436,37 +499,35 @@ public class playerController : MonoBehaviour {
 				turns++;
 				turnUp ();
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				turns++;
+				turns++;				
 				turnRight ();
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
 				turns++;
 				turnLeft ();
 			} else if(Input.GetMouseButtonDown(0)) {
-				logMoveData ();
+				logActionData ();
 				bool[] errorsPlayer = getErrorType ();
 				if(!errorsPlayer[0] && !errorsPlayer[1]) {
+					// player moves physically in the direction they are turned
+					logMoveData();
 					string newLoc = move();
 					moves++;
 					countLeftRightSymmetry(newLoc);
 					countTopBottomSymmetry(newLoc);
 
 				} else if(errorsPlayer[1]) {
-					//if player blocked by ice, move ice if possible
-					//TODO
-					Debug.Log("Blocked by ice");
-
-					//check each iceBlock to see if the player
+					//Player blocked by ice, move ice if possible
+					logPushData();
 					foreach(iceBlock i in ices) {
 						if(predictedSquare == i.square) {
-							// player just tried to push ice block
+							// log that a block was actually pushed
+							successfulPushes++;
 							push(i);
 						}
 
 					}
 
-				} else if(errorsPlayer[0]) {
-					Debug.Log("ERROR: Blocked by offscreen");
-				}
+				} 
 			} else if(victory()) {
 				logEndGameData ();
 				resultStr +="VICTORY__";
@@ -479,7 +540,7 @@ public class playerController : MonoBehaviour {
 	}
 
 	private void push(iceBlock ice) {
-		ice.getPushed();
+		string newLoc = ice.move();
 	}
 
 	private bool blockedByIce() {

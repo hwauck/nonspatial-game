@@ -14,8 +14,12 @@ public class iceBlock : MonoBehaviour {
 	private Vector2 predictedSquare;
 	public Vector3 startingPos;
 	public Vector2 startingSquare;
-	private bool stoppedByIce;
-	private bool stoppedByOffscreen;
+	private int iceCantMove; 	//should equal iceBlockedByIce + iceBlockedbyOffscreen
+	private int iceBlockedByIce; 
+	private int iceBlockedByOffscreen; 
+	private int stoppedByIce;
+	private int stoppedByOffscreen;
+	private string[] movementSquares; // ice can only move on white squares
 
 	// Use this for initialization
 	void Start () {
@@ -23,8 +27,40 @@ public class iceBlock : MonoBehaviour {
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
 		down = new Vector3(0,0,180);
-		stoppedByIce = false;
-		stoppedByOffscreen = false;
+		iceCantMove = 0; 	
+		iceBlockedByIce = 0; 
+		iceBlockedByOffscreen = 0; 
+		stoppedByIce = 0;
+		stoppedByOffscreen = 0;
+
+		movementSquares = new string[15];
+		int i = 0;
+		for(int x = 2; x < 5; x++) {
+			for(int y = 2; y < 7; y++) {
+				movementSquares[i] = "" + x + "" + y;
+				i++;
+			}
+		}
+	}
+
+	public int getIceCantMove() {
+		return iceCantMove;
+	}
+
+	public int getIceBlockedByIce() {
+		return iceBlockedByIce;
+	}
+
+	public int getIceBlockedByOffscreen() {
+		return iceBlockedByOffscreen;
+	}
+
+	public int getStoppedByOffscreen() {
+		return stoppedByOffscreen;
+	}
+
+	public int getStoppedByIce() {
+		return stoppedByIce;
 	}
 
 	private string coordinatesToSquare(Vector2 coordinates) {
@@ -33,79 +69,49 @@ public class iceBlock : MonoBehaviour {
 
 
 	public bool canMove() {
-		//TODO
+		updatePredictedSquare();
 		return !offScreen () && !blockedByIce();
-		return false;
 	}
 
 	private bool offScreen() {
-		if(GameObject.Find ("Block" + predictedSquare.x + "" + predictedSquare.y) == null) {
-			return true;
+		for(int i = 0; i < movementSquares.Length; i++) {
+			if(movementSquares[i].Equals(coordinatesToSquare(predictedSquare))) {
+				return false;
+			}
 		}
-		return false;
+		iceBlockedByOffscreen++;
+		iceCantMove++;
+		return true;
 	}
 
 	private bool blockedByIce() {
 		if(predictedSquare == otherBlocks[0].square || predictedSquare == otherBlocks[1].square) {
+			iceBlockedByIce++;
+			iceCantMove++;
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	//checked right after player moves
-	private bool isStoppedByOffscreen() {
-		return stoppedByOffscreen;
-	}
-
-	private bool isStoppedByIce() {
-		return stoppedByIce;
-	}
-
-	// index 0 is 1 if blocked by offScreen
-	// index 1 is 1 if blocked by another ice block
-	// index 2 is 1 if slides and then stops because of offscreen
-	// index 3 is 1 if slides and then stops because of another ice block
-	// called right after player moves
-	public bool[] getErrorType() {
-		bool[] errors = new bool[4];
-		for(int i = 0; i < 4; i++) {
-			errors[i] = false;
-		}
-		if(offScreen ()) {
-			errors[0] = true;
-		} else if (blockedByIce()) {
-			errors[1] = true;
-		} else if (isStoppedByOffscreen()) {
-			errors[2] = true;
-		} else if (isStoppedByIce()) {
-			errors[3] = true;
-		}
-		return errors;
-	}
-
-	public void getPushed() {
-		if(!offScreen() && !blockedByIce()) {
-			//no blockages - ice block can be pushed
-			move();
+	private void updatePredictedSquare() {
+		direction = player.getDirection();
+		if(approximately(direction, Vector3.up)) {
+			predictedSquare.x = square.x - 1;
+			predictedSquare.y = square.y;
+		} else if (approximately(direction, Vector3.down)) {
+			predictedSquare.x = square.x + 1;
+			predictedSquare.y = square.y;
+		} else if (approximately(direction, Vector3.left)) {
+			predictedSquare.y = square.y - 1;
+			predictedSquare.x = square.x;
+		} else if (approximately(direction, Vector3.right)) {
+			predictedSquare.y = square.y + 1;
+			predictedSquare.x = square.x;
 		} 
 	}
 
 	public string moveOneSquare() {
-		direction = player.getDirection();
-		if(approximately(direction, up)) {
-			predictedSquare.x = square.x;
-			predictedSquare.y = square.y + 1;
-		} else if (approximately(direction, down)) {
-			predictedSquare.x = square.x;
-			predictedSquare.y = square.y - 1;
-		} else if (approximately(direction, left)) {
-			predictedSquare.y = square.y;
-			predictedSquare.x = square.x - 1;
-		} else if (approximately(direction, right)) {
-			predictedSquare.y = square.y;
-			predictedSquare.x = square.x + 1;
-		} 
 		transform.Translate(direction * 2f, Space.World);
 		string newLoc = coordinatesToSquare(predictedSquare);
 		Vector3 oldSquare = square; 
@@ -115,13 +121,11 @@ public class iceBlock : MonoBehaviour {
 
 		// keeps track of stoppedByIce and stoppedByOffscreen events
 		if(offScreen()) {
-			return "OFFSCREEN_" + newLoc;
+			stoppedByOffscreen++;
 		} else if (blockedByIce()) {
-			return "BLOCKED_" + newLoc;
-		} else {
-			Debug.Log("ERROR: Slide stopped by neither ice nor offscreen");
-			return "ERROR_" + newLoc;
-		}
+			stoppedByIce++;
+		} 
+		return newLoc;
 	}
 
 	private bool approximately(Vector3 first, Vector3 second) {
