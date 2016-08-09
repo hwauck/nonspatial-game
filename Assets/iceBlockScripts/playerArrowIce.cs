@@ -24,6 +24,7 @@ public class playerArrowIce : MonoBehaviour {
 	private Text victoryText;
 
 	/* DATA COLLECTION */
+	private int plays;
 	private int victories;
 	private int resets;
 
@@ -97,7 +98,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		resultStr = "MODE,ice\n";
+		resultStr = "MODE,ice__";
 		direction = Vector3.right;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
@@ -107,6 +108,7 @@ public class playerArrowIce : MonoBehaviour {
 		predictedSquare = new Vector2(5,3); //player faces right to start
 
 		//Data collection variables
+		plays = 1;
 		victories = 0;
 		resets = 0;
 		moves = 0;
@@ -353,6 +355,51 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
+	// logs end game data, increments resets, and saves results to database
+	// only when "Play Again? Yes" button is clicked
+	public void newGame() {
+		//resultStr += "RESET__";
+		plays++;
+		logEndGameData();
+		reset();
+		resultStr += "\nNEW_GAME,statue__";
+	}
+
+	// when the "Reset" button is clicked
+	public void buttonReset() {
+		resets++;
+		plays++;
+		logEndGameData();
+		reset();
+		resultStr += "\nNEW_ATTEMPT,statue__";
+	}
+
+	// only when "I'm done playing" button is clicked
+	// (end game data has not yet been logged)
+	public void buttonQuit() {
+		logEndGameData();
+		SendSaveResult();
+		SceneManager.LoadScene("postgame_survey");
+	}
+
+	// only when "Play Again? No" button is clicked
+	// (end game data has already been logged)
+	public void saveAndQuit() {
+		//resultStr +="QUIT__";
+		SendSaveResult();
+		SceneManager.LoadScene("postgame_survey");
+	}
+
+	private void SendSaveResult()
+	{
+		resultStr += "ATTEMPTS," + plays + "__";
+		resultStr += "RESETS," + resets + "__";
+		resultStr += "VICTORIES," + victories + "__";
+		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		Debug.Log(resultStr);
+
+	}
+
 	public void reset() {
 		if(victorious) {
 			victorious = false;
@@ -363,7 +410,7 @@ public class playerArrowIce : MonoBehaviour {
 		direction = Vector3.right;
 		transform.rotation = Quaternion.Euler(right);
 		//TODO: reset all data collection vars
-		resultStr = "MODE,ice\n";
+		resultStr = "MODE,ice__";
 
 
 		foreach(iceBlock i in ices) {
@@ -409,21 +456,19 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
-		resultStr += "RESETS," + resets + "\n";
-		resultStr += "VICTORIES," + victories + "\n";
-
 		/* MOVEMENT DATA */
 		avg_turns_per_action = actions / (1.0f * turns);
 		avg_turns_per_move = moves / (1.0f * turns);
 		avg_turns_per_push = pushes / (1.0f * turns);
-		resultStr += "ACTIONS," + actions +"\n"; //should be equal to moves + pushes
-		resultStr += "MOVES," + moves +"\n";
-		resultStr += "PUSHES," + pushes +"\n";
-		resultStr += "SUCCESSFUL_PUSHES" + successfulPushes +"\n";
+		resultStr += "ACTIONS," + actions +"__"; //should be equal to moves + pushes
+		resultStr += "MOVES," + moves +"__";
+		resultStr += "TURNS," + turns +"__";
+		resultStr += "PUSHES," + pushes +"__";
+		resultStr += "SUCCESSFUL_PUSHES" + successfulPushes +"__";
 		resultStr += "AVG_PUSH_SUCCESS_RATE" + pushes /(1.0f * successfulPushes);
-		resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+"\n"; 
-		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+"\n";
-		resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+"\n";
+		resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+"__"; 
+		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+"__";
+		resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+"__";
 
 		/* ICE BLOCK DATA */
 		foreach(iceBlock i in ices) {
@@ -434,36 +479,36 @@ public class playerArrowIce : MonoBehaviour {
 			iceStoppedByOffscreen += i.getStoppedByOffscreen();
 			iceStoppedByIce += i.getStoppedByIce();
 		}
-		resultStr += "ICE_CANT_MOVE," + iceCantMove + "\n";
-		resultStr += "ICE_BLOCKED_BY_ICE," + iceBlockedByIce + "\n";
-		resultStr += "ICE_BLOCKED_BY_OFFSCREEN," + iceBlockedByOffscreen + "\n";
-		resultStr += "ICE_STOPPED_BY_ICE," + iceStoppedByIce + "\n";
-		resultStr += "ICE_STOPPED_BY_OFFSCREEN," + iceStoppedByOffscreen + "\n";
+		resultStr += "ICE_CANT_MOVE," + iceCantMove + "__";
+		resultStr += "ICE_BLOCKED_BY_ICE," + iceBlockedByIce + "__";
+		resultStr += "ICE_BLOCKED_BY_OFFSCREEN," + iceBlockedByOffscreen + "__";
+		resultStr += "ICE_STOPPED_BY_ICE," + iceStoppedByIce + "__";
+		resultStr += "ICE_STOPPED_BY_OFFSCREEN," + iceStoppedByOffscreen + "__";
 
 		/* TIME DATA */
 		avg_time_per_action = avg_time_per_action/actions;
 		avg_time_per_move = avg_time_per_move/moves;
 		avg_time_per_push = avg_time_per_move/pushes;
 		game_time = (Time.time - startTime);
-		resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + "\n";
-		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + "\n";
-		resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + "\n";
-		resultStr +="TOTAL_TIME," + game_time +"\n";
+		resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + "__";
+		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + "__";
+		resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + "__";
+		resultStr +="TOTAL_TIME," + game_time +"__";
 
 		/* PLAYER LOCATION DATA */
 		squares_explored_player = getNumSquaresPlayerExplored(); // squares player has moved onto
 		left_right_symmetry_player = left_squares_player / (1.0f * right_squares_player);
 		top_bottom_symmetry_player = top_squares_player / (1.0f * bottom_squares_player);
-		resultStr += "PLAYER_SQUARES_TRAVERSED," + num_traversed_squares_player + "\n";
-		resultStr += "PLAYER_SQUARES_EXPLORED," + squares_explored_player + "\n";
-		resultStr += "PLAYER_SQUARES_REPEATED," + num_repeated_squares_player + "\n";
+		resultStr += "PLAYER_SQUARES_TRAVERSED," + num_traversed_squares_player + "__";
+		resultStr += "PLAYER_SQUARES_EXPLORED," + squares_explored_player + "__";
+		resultStr += "PLAYER_SQUARES_REPEATED," + num_repeated_squares_player + "__";
 
-		resultStr += "PLAYER_LEFT_SQUARES," + left_squares_player + "\n";
-		resultStr += "PLAYER_RIGHT_SQUARES," + right_squares_player + "\n";
-		resultStr += "PLAYER_TOP_SQUARES," + top_squares_player + "\n";
-		resultStr += "PLAYER_BOTTOM_SQUARES," + bottom_squares_player + "\n";
-		resultStr += "PLAYER_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_player + "\n";
-		resultStr += "PLAYER_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_player + "\n";
+		resultStr += "PLAYER_LEFT_SQUARES," + left_squares_player + "__";
+		resultStr += "PLAYER_RIGHT_SQUARES," + right_squares_player + "__";
+		resultStr += "PLAYER_TOP_SQUARES," + top_squares_player + "__";
+		resultStr += "PLAYER_BOTTOM_SQUARES," + bottom_squares_player + "__";
+		resultStr += "PLAYER_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_player + "__";
+		resultStr += "PLAYER_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_player + "__";
 
 		/* ICE LOCATION DATA */
 		countIceSymmetry();
@@ -474,16 +519,16 @@ public class playerArrowIce : MonoBehaviour {
 		}
 		left_right_symmetry_ice = left_squares_ice / (1.0f * right_squares_ice);
 		top_bottom_symmetry_ice = top_squares_ice / (1.0f * bottom_squares_ice);
-		resultStr += "ICE_SQUARES_TRAVERSED," + num_traversed_squares_ice + "\n";
-		resultStr += "ICE_SQUARES_EXPLORED," + squares_explored_ice + "\n";
-		resultStr += "ICE_SQUARES_REPEATED," + num_repeated_squares_ice + "\n";
+		resultStr += "ICE_SQUARES_TRAVERSED," + num_traversed_squares_ice + "__";
+		resultStr += "ICE_SQUARES_EXPLORED," + squares_explored_ice + "__";
+		resultStr += "ICE_SQUARES_REPEATED," + num_repeated_squares_ice + "__";
 
-		resultStr += "ICE_LEFT_SQUARES," + left_squares_ice + "\n";
-		resultStr += "ICE_RIGHT_SQUARES," + right_squares_ice + "\n";
-		resultStr += "ICE_TOP_SQUARES," + top_squares_ice + "\n";
-		resultStr += "ICE_BOTTOM_SQUARES," + bottom_squares_ice + "\n";
-		resultStr += "ICE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_ice + "\n";
-		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + "\n";			
+		resultStr += "ICE_LEFT_SQUARES," + left_squares_ice + "__";
+		resultStr += "ICE_RIGHT_SQUARES," + right_squares_ice + "__";
+		resultStr += "ICE_TOP_SQUARES," + top_squares_ice + "__";
+		resultStr += "ICE_BOTTOM_SQUARES," + bottom_squares_ice + "__";
+		resultStr += "ICE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_ice + "__";
+		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + "__";			
 	}
 
 	private void countLeftRightSymmetry(string newLoc) {
@@ -526,31 +571,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
-	public void saveAndReset() {
-		logEndGameData();
-		//resultStr += "RESET__";
-		resets++;
-		SendSaveResult();
-		reset();
-	}
 
-	public void saveAndQuit() {
-		logEndGameData();
-		resultStr +="QUIT__";
-		SendSaveResult();
-		SceneManager.LoadScene("postgame_survey");
-	}
-
-	//player clicks "No" on the "Do you want to play again?" question
-	public void quit() {
-		SceneManager.LoadScene("postgame_survey");
-	}
-
-	private void SendSaveResult()
-	{
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
-
-	}
 		
 	// Update is called once per frame
 	void Update () {
@@ -567,14 +588,13 @@ public class playerArrowIce : MonoBehaviour {
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
 				turns++;
 				turnLeft ();
-			} else if(Input.GetMouseButtonDown(0)) {
+			} else if(Input.GetKeyDown(KeyCode.F)) {
 				logActionData ();
 				bool[] errorsPlayer = getErrorType ();
 				if(!errorsPlayer[0] && !errorsPlayer[1]) {
 					// player moves physically in the direction they are turned
 					logMoveData();
 					string newLoc = move();
-					moves++;
 					countLeftRightSymmetry(newLoc); // includes repetitions
 					countTopBottomSymmetry(newLoc); //includes repetitations
 

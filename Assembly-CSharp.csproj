@@ -53,11 +53,11 @@
      <Compile Include="Assets\iceBlockScripts\playerArrowIce.cs" />
      <Compile Include="Assets\playerArrowOld.cs" />
      <Compile Include="Assets\playerArrowStatue.cs" />
+     <Compile Include="Assets\playerArrowTile.cs" />
      <Compile Include="Assets\postgameSurvey.cs" />
      <Compile Include="Assets\pregameSurvey.cs" />
      <Compile Include="Assets\square.cs" />
      <Compile Include="Assets\statueArrow.cs" />
-     <Compile Include="Assets\tilePuzzleScripts\playerArrowTile.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
