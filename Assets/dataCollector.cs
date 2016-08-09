@@ -11,26 +11,6 @@ public class dataCollector : MonoBehaviour {
 	private string gamesPlayed; // free response up to 300 characters
 	private int numRepeatedPlays; // 0 to (4 or more)
 
-	// player behavior data (in-game)
-	private int moves;
-	private int turnCount;
-	private int left_squares;
-	private int right_squares;
-	private int num_repeated_squares;
-	private int squares_explored;
-	// number of times all statues and player move
-	private int all_move;
-	// number of times the player and only one of the statues move
-	private int two_move;
-	// number of times only the player moves
-	private int player_only_moves;
-
-	private float avg_repeats_per_square;
-	private float avg_time_per_move;
-	private float avg_turns_per_move;
-	private float left_right_symmetry;
-	private float game_time;
-
 	// post-game survey
 	private int howFun;
 	private int howBoring;
@@ -83,6 +63,7 @@ public class dataCollector : MonoBehaviour {
 		allData += "howEasy:" + howEasy.ToString() + "__";
 		allData += "howFrustrating:" + howFrustrating.ToString() + "___";
 
+		Debug.Log(allData);
 		string sendurl = "http://spatialcs.web.engr.illinois.edu/SaveData.php?savedata=\"";
 		sendurl += allData + "\"";
 		WWW www = new WWW(sendurl);

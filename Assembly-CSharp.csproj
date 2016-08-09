@@ -46,17 +46,18 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\AIplayerArrow.cs" />
-     <Compile Include="Assets\GameManager.cs" />
+     <Compile Include="Assets\HintManager.cs" />
      <Compile Include="Assets\consentForm.cs" />
      <Compile Include="Assets\dataCollector.cs" />
      <Compile Include="Assets\iceBlockScripts\iceBlock.cs" />
-     <Compile Include="Assets\iceBlockScripts\playerController.cs" />
-     <Compile Include="Assets\playerArrow.cs" />
+     <Compile Include="Assets\iceBlockScripts\playerArrowIce.cs" />
      <Compile Include="Assets\playerArrowOld.cs" />
+     <Compile Include="Assets\playerArrowStatue.cs" />
      <Compile Include="Assets\postgameSurvey.cs" />
      <Compile Include="Assets\pregameSurvey.cs" />
      <Compile Include="Assets\square.cs" />
      <Compile Include="Assets\statueArrow.cs" />
+     <Compile Include="Assets\tilePuzzleScripts\playerArrowTile.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

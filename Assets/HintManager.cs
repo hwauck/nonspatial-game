@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour {
 	// and player has not explored 1 new square since the last hint
 	public void giveHint() {
 		hintOn = true;
-		IList<string> squaresExplored = player.GetComponent<playerArrow>().getSquaresExplored();
+		IList<string> squaresExplored = player.GetComponent<playerArrowStatue>().getSquaresExplored();
 		for(int i = 0; i < boardSquares.Length; i++) {
 			GameObject currentSquare = boardSquares[i];
 			string name = currentSquare.name.Substring(6);
@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		playerArrow arrow = player.GetComponent<playerArrow>();
+		playerArrowStatue arrow = player.GetComponent<playerArrowStatue>();
 		int currentMoves = arrow.getNumMoves();
 		int currentSquaresExplored = arrow.getNumSquaresExplored();
 		squaresExploredSinceLastHint = squaresExplored - currentSquaresExplored;
