@@ -66,6 +66,17 @@ public class playerArrowStatue : MonoBehaviour {
 	private int statuesCollide; // facing each other, try to move onto same square
 	private int statueBlockedByOffscreen;
 
+	/* STATUE ARROW DATA */
+	private int num_traversed_squares_statues;
+	private int num_repeated_squares_statues;
+	private int squares_explored_statues;
+	private int left_squares_statues;
+	private int right_squares_statues;
+	private int bottom_squares_statues;
+	private int top_squares_statues;
+	private float left_right_symmetry_statues;
+	private float top_bottom_symmetry_statues;
+
 	string resultStr;
 
 	void Awake() {
@@ -93,7 +104,7 @@ public class playerArrowStatue : MonoBehaviour {
 		plays = 1;
 		victories = 0;
 		resets = 0;
-		resultStr = "MODE,statue__";
+		resultStr = "NEW_GAME,statue__";
 		moves = 0;
 		turns = 0;
 		avg_time_per_move = 0f;
@@ -103,10 +114,10 @@ public class playerArrowStatue : MonoBehaviour {
 		left_squares = 0;
 		right_squares = 0;
 		top_squares = 0;
-		bottom_squares = 0;
+		bottom_squares = 1;
 		squares_explored = 0;
 		num_repeated_squares = 0;
-		num_traversed_squares = 0;
+		num_traversed_squares = 1;
 		left_right_symmetry = -1f;
 		top_bottom_symmetry = -1f;
 		all_move = 0;
@@ -117,6 +128,17 @@ public class playerArrowStatue : MonoBehaviour {
 		statuesBlockEachOther = 0;
 		statuesCollide = 0;
 		statueBlockedByOffscreen = 0;
+
+		/* STATUE ARROW DATA */
+		num_traversed_squares_statues = 0; // statue Arrow will take care of this
+		num_repeated_squares_statues = 0;
+		squares_explored_statues = 2;
+		left_squares_statues = 0;
+		right_squares_statues = 0;
+		bottom_squares_statues = 1;
+		top_squares_statues = 1;
+		left_right_symmetry_statues = -1f;
+		top_bottom_symmetry_statues = -1f;
 
 		left_squares_list = new List<string>();
 		left_squares_list.Add ("00");
@@ -352,7 +374,6 @@ public class playerArrowStatue : MonoBehaviour {
 	public void newGame() {
 		//resultStr += "RESET__";
 		plays++;
-		logEndGameData();
 		reset();
 		resultStr += "\nNEW_GAME,statue__";
 	}
@@ -363,13 +384,16 @@ public class playerArrowStatue : MonoBehaviour {
 		plays++;
 		logEndGameData();
 		reset();
-		resultStr += "\nNEW_ATTEMPT,statue__";
+		resultStr += "RESET__\nNEW_ATTEMPT,statue__";
+
 	}
 
 	// only when "I'm done playing" button is clicked
 	// (end game data has not yet been logged)
 	public void buttonQuit() {
 		logEndGameData();
+		resultStr += "DONE__\nEND_SESSION,done__";
+
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -378,6 +402,9 @@ public class playerArrowStatue : MonoBehaviour {
 	// (end game data has already been logged)
 	public void saveAndQuit() {
 		//resultStr +="QUIT__";
+		logEndGameData();
+		resultStr += "NO__\nEND_SESSION,no__";
+
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -387,7 +414,7 @@ public class playerArrowStatue : MonoBehaviour {
 		resultStr += "ATTEMPTS," + plays + "__";
 		resultStr += "RESETS," + resets + "__";
 		resultStr += "VICTORIES," + victories + "__";
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		Debug.Log(resultStr);
 
 	}
@@ -413,10 +440,10 @@ public class playerArrowStatue : MonoBehaviour {
 		left_squares = 0;
 		right_squares = 0;
 		top_squares = 0;
-		bottom_squares = 0;
+		bottom_squares = 1;
 		squares_explored = 0;
 		num_repeated_squares = 0;
-		num_traversed_squares = 0;
+		num_traversed_squares = 1;
 		left_right_symmetry = -1f;
 		top_bottom_symmetry = -1f;
 		all_move = 0;
@@ -427,6 +454,17 @@ public class playerArrowStatue : MonoBehaviour {
 		statuesBlockEachOther = 0;
 		statuesCollide = 0;
 		statueBlockedByOffscreen = 0;
+
+		/* STATUE ARROW DATA */
+		num_traversed_squares_statues = 0;
+		num_repeated_squares_statues = 0;
+		squares_explored_statues = 2;
+		left_squares_statues = 0;
+		right_squares_statues = 0;
+		bottom_squares_statues = 1;
+		top_squares_statues = 1;
+		left_right_symmetry_statues = -1f;
+		top_bottom_symmetry_statues = -1f;
 
 		statueArrowBottom.reset ();
 		statueArrowTop.reset ();
@@ -473,13 +511,10 @@ public class playerArrowStatue : MonoBehaviour {
 		avg_time_per_move += currentMoveTime;
 		prevMoveEndTime = currentTime;
 		if(canMove() && statueArrowBottom.canMove() && statueArrowTop.canMove ()) {
-			Debug.Log ("ALL_MOVE");
 			all_move++;
 		} else if (canMove() && (statueArrowBottom.canMove() || statueArrowTop.canMove())) {
-			Debug.Log ("TWO_MOVE");
 			two_move++;
 		} else if (canMove()) {
-			Debug.Log ("ONE_MOVE");
 			player_only_moves++;
 		} 
 	}
@@ -499,37 +534,83 @@ public class playerArrowStatue : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
+		if(moves == 0) {
+			avg_time_per_move = -1f;
+			avg_turns_per_move = -1f;
+		} else {
+			avg_time_per_move = avg_time_per_move/moves;
+			avg_turns_per_move = turns/(moves * 1.0f);
+		}
 
-		avg_time_per_move = avg_time_per_move/moves;
-		avg_turns_per_move = turns/(moves * 1.0f);
+		squares_explored = squares_explored_list.Count;
+
+		if(right_squares == 0) {
+			left_right_symmetry = -1f;
+		} else {
+			left_right_symmetry = (left_squares / (right_squares * 1.0f));
+		}
+		if(bottom_squares == 0) {
+			top_bottom_symmetry = -1f;
+		} else {
+			top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
+		}
+
+		game_time = (Time.time - startTime);
+		num_traversed_squares_statues = statueArrowBottom.getNumTraversedSquares() 
+			+ statueArrowTop.getNumTraversedSquares();
+
+		if(right_squares_statues == 0) {
+			left_right_symmetry_statues = -1f;
+		} else {
+			left_right_symmetry_statues = (left_squares_statues / (right_squares_statues * 1.0f));
+		}
+		if(bottom_squares_statues == 0) {
+			top_bottom_symmetry_statues = -1f;
+		} else {
+			top_bottom_symmetry_statues = (top_squares_statues / (bottom_squares_statues * 1.0f));
+		}
+
+		/* PLAYER MOVEMENT DATA */
 		resultStr +="TOTAL_MOVES," + moves+"__";
 		resultStr += "TURNS," + turns +"__";
 		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+"__";
 		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move.ToString()+"__";
+		resultStr +="NUM_SQUARES_TRAVERSED," + num_traversed_squares+"__";
 		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+"__";
-		squares_explored = squares_explored_list.Count;
 		resultStr +="NUM_REPEATED_SQUARES," + num_repeated_squares+"__";
 
+		/* PLAYER LOCATION DATA */
 		resultStr += "LEFT_SQUARES," + left_squares + "__";
 		resultStr += "RIGHT_SQUARES," + right_squares + "__";
 		resultStr += "TOP_SQUARES," + top_squares + "__";
 		resultStr += "BOTTOM_SQUARES," + bottom_squares + "__";
-		left_right_symmetry = (left_squares / (right_squares * 1.0f));
 		resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +"__";
-		top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
 		resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +"__";
 
+		/* COLLISION DATA */
 		resultStr +="PLAYER_STATUE_COLLIDE," + playerStatueCollide + "__";
 		resultStr +="PLAYER_BLOCKED_BY_STATUE," + playerBlockedByStatue + "__";
 		resultStr +="STATUES_BLOCK_EACH_OTHER," + statuesBlockEachOther + "__";
 		resultStr +="STATUES_COLLIDE," + statuesCollide + "__";
 		resultStr +="STATUE_BLOCKED_BY_OFFSCREEN," + statueBlockedByOffscreen + "__";
 
+		/* STATUE ARROW MOVEMENT DATA */
+		resultStr += "STATUE_SQUARES_TRAVERSED," + num_traversed_squares_statues + "__";
+		resultStr += "STATUE_SQUARES_EXPLORED," + squares_explored_statues + "__";
+		resultStr += "STATUE_SQUARES_REPEATED," + num_repeated_squares_statues + "__";
+
+		resultStr += "STATUE_LEFT_SQUARES," + left_squares_statues + "__";
+		resultStr += "STATUE_RIGHT_SQUARES," + right_squares_statues + "__";
+		resultStr += "STATUE_TOP_SQUARES," + top_squares_statues + "__";
+		resultStr += "STATUE_BOTTOM_SQUARES," + bottom_squares_statues + "__";
+		resultStr += "STATUE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_statues + "__";
+		resultStr += "STATUE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_statues + "__";	
+
+		/* COMBINED MOVEMENT DATA */
 		resultStr +="ALL_MOVE," + all_move.ToString()+"__"; //redundant with collision vars?
 		resultStr +="TWO_MOVE," + two_move.ToString()+"__"; //redundant with collision vars?
 		resultStr +="ONE_MOVE," + player_only_moves.ToString()+"__"; //redundant with collision vars?
 
-		game_time = (Time.time - startTime);
 		resultStr +="TOTAL_TIME," + game_time+"__";
 
 	}
@@ -550,13 +631,26 @@ public class playerArrowStatue : MonoBehaviour {
 		}
 	}
 
+	private void countStatueSymmetry(string newLoc) {
+		if(left_squares_list.Contains (newLoc)) {
+			left_squares_statues++;
+		} else if (right_squares_list.Contains (newLoc)) {
+			right_squares_statues++;
+		}
+		if(top_squares_list.Contains (newLoc)) {
+			top_squares_statues++;
+		} else if (bottom_squares_list.Contains (newLoc)) {
+			bottom_squares_statues++;
+		}
+	}
+
 	// Update is called once per frame
 	void Update () {
 		if(!victorious) {
 			if(victory()) {
 				victories++;
 				logEndGameData ();
-				//resultStr +="VICTORY__";
+				resultStr +="VICTORY__";
 				displayOptions();
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				turns++;
@@ -606,7 +700,17 @@ public class playerArrowStatue : MonoBehaviour {
 						bool[] errorsTop = statueArrowTop.getErrorType();
 						if(!errorsBottom[0]) {
 							//not offscreen
+							string bottomStatuePredicted = statueArrowBottom.getPredictedSquare();
+							IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
+							IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
+							if(bottomStatue_squares_explored.Contains(bottomStatuePredicted) || topStatue_squares_explored.Contains(bottomStatuePredicted)) {
+								num_repeated_squares_statues++;
+							} else {
+								squares_explored_statues++;
+							}
+							countStatueSymmetry(bottomStatuePredicted);
 							string newLocStatue = statueArrowBottom.move();
+		
 							//resultStr +="," + newLocStatue+ "__";
 						} else {
 							// tried to move offscreen
@@ -615,6 +719,15 @@ public class playerArrowStatue : MonoBehaviour {
 						}
 						if(!errorsTop[0]) {
 							// not offscreen
+							string topStatuePredicted = statueArrowTop.getPredictedSquare();
+							IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
+							IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
+							if(bottomStatue_squares_explored.Contains(topStatuePredicted) || topStatue_squares_explored.Contains(topStatuePredicted)) {
+								num_repeated_squares_statues++;
+							} else {
+								squares_explored_statues++;
+							}
+							countStatueSymmetry(topStatuePredicted);
 							string newLocStatue = statueArrowTop.move();
 							//resultStr +="," + newLocStatue+"__";
 						} else {

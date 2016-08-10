@@ -4,6 +4,8 @@ using System.Collections;
 
 public class iceBlock : MonoBehaviour {
 
+	private const int NUM_ROWS = 5;
+	private const int NUM_COLS = 7;
 	public playerArrowIce player;
 	public iceBlock[] otherBlocks;
 	private Vector3 direction;
@@ -20,8 +22,8 @@ public class iceBlock : MonoBehaviour {
 	private int iceBlockedByOffscreen; 
 	private int stoppedByIce;
 	private int stoppedByOffscreen;
-	private int num_traversed_squares;
 	private int num_repeated_squares;
+	private int successfulPushes;
 	private int[,] squaresExplored; // each entry indicates how many times a square has been explored
 	private string[] movementSquares; // ice can only move on white squares
 
@@ -36,15 +38,16 @@ public class iceBlock : MonoBehaviour {
 		iceBlockedByOffscreen = 0; 
 		stoppedByIce = 0;
 		stoppedByOffscreen = 0;
-		num_traversed_squares = 1;
 		num_repeated_squares = 0;
+		successfulPushes = 0;
 
-		squaresExplored = new int[5,7];
-		for(int row = 0; row < 5; row++) {
-			for(int col = 0; col < 7; col++) {
+		squaresExplored = new int[NUM_ROWS,NUM_COLS];
+		for(int row = 0; row < NUM_ROWS; row++) {
+			for(int col = 0; col < NUM_COLS; col++) {
 				squaresExplored[row,col] = 0;
 			}
 		}
+		squaresExplored[(int)Math.Round(startingSquare.x) - 1,(int)Math.Round(startingSquare.y) - 1] = 1;
 		movementSquares = new string[15];
 		int i = 0;
 		for(int x = 2; x < 5; x++) {
@@ -76,18 +79,27 @@ public class iceBlock : MonoBehaviour {
 	}
 
 	public int getTraversedSquares() {
-		return num_traversed_squares;
+		int count = 0;
+		for(int row = 0; row < NUM_ROWS; row++) {
+			for(int col = 0; col < NUM_COLS; col++) {
+				count+=squaresExplored[row,col];
+			}
+		}
+		return count;
 	}
 
 	public int getRepeatedSquares() {
 		return num_repeated_squares;
 	}
 
+	// not including repeats
 	public int getNumSquaresExplored() {
 		int count = 0;
-		for(int row = 0; row < 5; row++) {
-			for(int col = 0; col < 7; col++) {
-				count+=squaresExplored[row,col];
+		for(int row = 0; row < NUM_ROWS; row++) {
+			for(int col = 0; col < NUM_COLS; col++) {
+				if (squaresExplored[row,col] > 0) {
+					count++;
+				}
 			}
 		}
 		return count;
@@ -98,7 +110,10 @@ public class iceBlock : MonoBehaviour {
 		return squaresExplored;
 	}
 
-
+	public int getSuccessfulPushes() {
+		return successfulPushes;
+	}
+		
 	private string coordinatesToSquare(Vector2 coordinates) {
 		return coordinates.x.ToString () + coordinates.y.ToString ();
 	}
@@ -115,15 +130,11 @@ public class iceBlock : MonoBehaviour {
 				return false;
 			}
 		}
-		iceBlockedByOffscreen++;
-		iceCantMove++;
 		return true;
 	}
 
 	private bool blockedByIce() {
 		if(predictedSquare == otherBlocks[0].square || predictedSquare == otherBlocks[1].square) {
-			iceBlockedByIce++;
-			iceCantMove++;
 			return true;
 		} else {
 			return false;
@@ -152,12 +163,13 @@ public class iceBlock : MonoBehaviour {
 		string newLoc = coordinatesToSquare(predictedSquare);
 		int x = Convert.ToInt32(newLoc.Substring(0,1));
 		int y = Convert.ToInt32(newLoc.Substring(1,1));
-		num_traversed_squares++;
-		if(squaresExplored[x-1,y-1] > 0) {
+		int[,] otherBlock1SquaresExplored = otherBlocks[0].getSquaresExplored();
+		int[,] otherBlock2SquaresExplored = otherBlocks[1].getSquaresExplored();
+		if(squaresExplored[x-1,y-1] > 0 || otherBlock1SquaresExplored[x-1,y-1] > 0
+			|| otherBlock2SquaresExplored[x-1,y-1] > 0) {
 			num_repeated_squares++;
 		} 
 		squaresExplored[x-1,y-1]++;
-
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
 		predictedSquare.x = 2f * square.x - oldSquare.x; 
@@ -179,11 +191,24 @@ public class iceBlock : MonoBehaviour {
 		return false;
 	}
 
-	// when this is called by playerController, need to parse returned string:
-	// newLoc.Substring(newLoc.IndexOf("_")); (to get just the location information)
+	//logs whether if a player's attempted push was not successful and why
+	private void logIceMoveData() {
+		if(!canMove()) {
+			iceCantMove++;
+		} else {
+			successfulPushes++;
+		}
+		if(offScreen()) {
+			iceBlockedByOffscreen++;
+		}
+		if(blockedByIce()) {
+			iceBlockedByIce++;
+		}
+	}
+
 	public string move() {
-		//TODO
 		string newLoc = "-1";
+		logIceMoveData();
 		while(canMove()) {
 			newLoc = moveOneSquare();
 		}
@@ -193,6 +218,24 @@ public class iceBlock : MonoBehaviour {
 	public void reset() {
 		transform.position = startingPos;
 		square = startingSquare;
+
+		iceCantMove = 0; 	
+		iceBlockedByIce = 0; 
+		iceBlockedByOffscreen = 0; 
+		stoppedByIce = 0;
+		stoppedByOffscreen = 0;
+		num_repeated_squares = 0;
+		successfulPushes = 0;
+
+		squaresExplored = new int[NUM_ROWS,NUM_COLS];
+		for(int row = 0; row < NUM_ROWS; row++) {
+			for(int col = 0; col < NUM_COLS; col++) {
+				squaresExplored[row,col] = 0;
+			}
+		}
+		squaresExplored[(int)Math.Round(startingSquare.x),(int)Math.Round(startingSquare.y)] = 1;
+
+
 	}
 	
 	// Update is called once per frame

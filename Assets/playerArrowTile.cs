@@ -69,8 +69,9 @@ public class playerArrowTile : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+		resultStr = "NEW_GAME,tile__";
 		boardSquares[7].GetComponent<SpriteRenderer>().color = Color.yellow;
-		direction = new Vector3(0,0,0);
+		direction = Vector3.up;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
@@ -101,7 +102,7 @@ public class playerArrowTile : MonoBehaviour {
 		longest_straight_path = 0;
 		avg_turns_per_displacement = 0f;
 
-		squares_explored = new int[NUM_ROWS,NUM_COLS];
+		squares_explored = new int[NUM_COLS,NUM_ROWS];
 		squares_explored[1,0] = 1;
 
 		left_squares_list = new List<string>();
@@ -112,7 +113,7 @@ public class playerArrowTile : MonoBehaviour {
 		// blockColRow
 		for(int row = 0; row < NUM_ROWS; row++) {
 			for(int col = 0; col < NUM_COLS; col++) {
-				squares_explored[row,col] = 0;
+				squares_explored[col,row] = 0;
 				if(col < 4) {
 					left_squares_list.Add("" + col + "" + row);
 				} else if (col > 4) {
@@ -237,6 +238,13 @@ public class playerArrowTile : MonoBehaviour {
 	}
 
 	public bool canMove() {
+		if(offScreen()) {
+			Debug.Log("Can't Move: Offscreen! Tried to move to " + coordinatesToSquare(predictedSquare));
+
+		} else if (blockedByObstacle()){
+			Debug.Log("Can't Move: Blocked by Obstacle at " + coordinatesToSquare(predictedSquare));
+
+		}
 		return !offScreen() && !blockedByObstacle();
 	}
 
@@ -247,13 +255,14 @@ public class playerArrowTile : MonoBehaviour {
 		//resultStr += predictedSquareName;
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
+		Debug.Log("Moved to " + coordinatesToSquare(square));
 		string newLoc = coordinatesToSquare(predictedSquare);
 		pathTrace += "-" + newLoc;
 		int col = Convert.ToInt32(newLoc.Substring(0,1));
 		int row = Convert.ToInt32(newLoc.Substring(1,1));
 		squares_explored[col,row]++;
-		predictedSquare.x = 1.25f * square.x - oldSquare.x; 
-		predictedSquare.y = 1.25f * square.y - oldSquare.y; 
+		predictedSquare.x = 2f * square.x - oldSquare.x; 
+		predictedSquare.y = 2f * square.y - oldSquare.y; 
 		return predictedSquareName;
 	}
 
@@ -262,9 +271,8 @@ public class playerArrowTile : MonoBehaviour {
 	public void newGame() {
 		//resultStr += "RESET__";
 		plays++;
-		logEndGameData();
 		reset();
-		resultStr += "\nNEW_GAME,statue__";
+		resultStr += "\nNEW_GAME,tile__";
 	}
 
 	// when the "Reset" button is clicked
@@ -273,13 +281,15 @@ public class playerArrowTile : MonoBehaviour {
 		resets++;
 		logEndGameData();
 		reset();
-		resultStr += "\nNEW_ATTEMPT,statue__";
+		resultStr += "RESET__\nNEW_ATTEMPT,tile__";
 	}
 
 	// only when "I'm done playing" button is clicked
 	// (end game data has not yet been logged)
 	public void buttonQuit() {
 		logEndGameData();
+		resultStr += "DONE__\nEND_SESSION,done__";
+
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -288,6 +298,9 @@ public class playerArrowTile : MonoBehaviour {
 	// (end game data has already been logged)
 	public void saveAndQuit() {
 		//resultStr +="QUIT__";
+		logEndGameData();
+
+		resultStr += "NO__\nEND_SESSION,no__";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -297,7 +310,7 @@ public class playerArrowTile : MonoBehaviour {
 		resultStr += "ATTEMPTS," + plays + "__";
 		resultStr += "RESETS," + resets + "__";
 		resultStr += "VICTORIES," + victories + "__";
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		Debug.Log(resultStr);
 
 	}
@@ -340,7 +353,7 @@ public class playerArrowTile : MonoBehaviour {
 		longest_straight_path = 0;
 		pathTurns = 0;
 
-		squares_explored = new int[NUM_ROWS,NUM_COLS];
+		squares_explored = new int[NUM_COLS,NUM_ROWS];
 
 
 		unDisplayOptions();
@@ -395,34 +408,55 @@ public class playerArrowTile : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
-		avg_time_per_move = avg_time_per_move/moves;
-		avg_turns_per_move = turns/(moves * 1.0f);
+		if(moves == 0) {
+			avg_time_per_move = -1f;
+			avg_turns_per_move = -1f;
+			avg_turns_per_displacement = -1f;
+
+		} else {
+			avg_time_per_move = avg_time_per_move/moves;
+			avg_turns_per_move = turns/(moves * 1.0f);
+			avg_turns_per_displacement = pathTurns / (1.0f * moves);
+
+		}
+
+		for(int row = 0; row < NUM_ROWS; row++) {
+			for(int col = 0; col < NUM_COLS; col++) {
+				num_squares_explored += squares_explored[col,row];
+			}
+		}
+
+		if(right_squares == 0) {
+			left_right_symmetry = -1f;
+		} else {
+			left_right_symmetry = (left_squares / (right_squares * 1.0f));
+		}
+		if(bottom_squares == 0) {
+			top_bottom_symmetry = -1f;
+		} else {
+			top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
+		}
+		longest_straight_path = getLongestStraightPath();
+		game_time = (Time.time - startTime);
+
 		resultStr +="TOTAL_MOVES," + moves+"__";
 		resultStr += "TURNS," + turns +"__";
 		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+"__";
 		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move.ToString()+"__";
 
-		for(int row = 0; row < NUM_ROWS; row++) {
-			for(int col = 0; col < NUM_COLS; col++) {
-				num_squares_explored += squares_explored[row,col];
-			}
-		}
 		resultStr +="SQUARES_EXPLORED," + num_squares_explored+"__";
 		resultStr += "LEFT_SQUARES," + left_squares + "__";
 		resultStr += "RIGHT_SQUARES," + right_squares + "__";
 		resultStr += "TOP_SQUARES," + top_squares + "__";
 		resultStr += "BOTTOM_SQUARES," + bottom_squares + "__";
-		left_right_symmetry = (left_squares / (right_squares * 1.0f));
 		resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +"__";
-		top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
 		resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +"__";
-		resultStr +="PATH_TRACE," + pathTrace + "__";
-		longest_straight_path = getLongestStraightPath();
-		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + "__";
-		avg_turns_per_displacement = pathTurns / (1.0f * moves);
-		resultStr +="AVG_TURNS_PER_DISPLACEMENT," + pathTurns + "__";
 
-		game_time = (Time.time - startTime);
+		resultStr +="PATH_TRACE," + pathTrace + "__";
+		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + "__";
+		resultStr +="NUM_TURNS_IN_PATH," + pathTurns + "__";
+		resultStr +="AVG_TURNS_PER_DISPLACEMENT," + avg_turns_per_displacement + "__";
+
 		resultStr +="TOTAL_TIME," + game_time+"__";
 
 	}
@@ -447,7 +481,13 @@ public class playerArrowTile : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(!victorious) {
-			if (Input.GetKeyDown (KeyCode.DownArrow)) {
+			if(victory()) {
+				logEndGameData ();
+				resultStr +="VICTORY__";
+				victories++;
+				//change later to allow player to play a new game
+				displayOptions();
+			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				turns++;
 				turnDown ();
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
@@ -468,14 +508,7 @@ public class playerArrowTile : MonoBehaviour {
 					countTopBottomSymmetry(newLoc); 
 
 				} 
-			} else if(victory()) {
-				logEndGameData ();
-				//resultStr +="VICTORY__";
-				victories++;
-				SendSaveResult();
-				//change later to allow player to play a new game
-				displayOptions();
-			}
+			} 
 		}
 	}
 }

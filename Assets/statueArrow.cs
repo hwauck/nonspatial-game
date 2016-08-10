@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class statueArrow : MonoBehaviour {
 	public GameObject OS;
@@ -15,6 +16,10 @@ public class statueArrow : MonoBehaviour {
 	public Vector2 startingSquare;
 	public Vector2 startingPredicted;
 	public Vector3 startingRotation;
+	private IList<string> squares_explored_list;
+
+	private int num_traversed_squares;
+
 
 	// For data collection: top or bottom
 	public string NAME;
@@ -26,7 +31,9 @@ public class statueArrow : MonoBehaviour {
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
 		down = new Vector3(0,0,180);
-		
+		squares_explored_list = new List<string>();
+		squares_explored_list.Add (coordinatesToSquare(startingSquare));
+		num_traversed_squares = 1;
 	}
 
 	private string coordinatesToSquare(Vector2 coordinates) {
@@ -78,8 +85,12 @@ public class statueArrow : MonoBehaviour {
 	
 	public string move() {
 		transform.Translate(direction * 2f, Space.World);
+		num_traversed_squares++;
 		string newLoc = coordinatesToSquare(predictedSquare);
-		Debug.Log (NAME + "_MOVE_TO," + newLoc);
+		IList<string> otherStatue_squares_explored = otherStatue.getSquaresExplored();
+		if(!squares_explored_list.Contains(newLoc) && !otherStatue_squares_explored.Contains(newLoc)) {
+			squares_explored_list.Add(newLoc);
+		} 
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
 		predictedSquare.x = 2f * square.x - oldSquare.x; 
@@ -122,6 +133,18 @@ public class statueArrow : MonoBehaviour {
 		transform.rotation = Quaternion.Euler(right);
 		predictedSquare.x = square.x + 1;
 		predictedSquare.y = square.y;
+	}
+
+	public string getPredictedSquare() {
+		return coordinatesToSquare(predictedSquare);
+	}
+
+	public IList<string> getSquaresExplored() {
+		return squares_explored_list;
+	}
+
+	public int getNumTraversedSquares() {
+		return num_traversed_squares++;
 	}
 	
 	// Update is called once per frame
