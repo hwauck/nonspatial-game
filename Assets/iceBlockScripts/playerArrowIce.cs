@@ -55,6 +55,8 @@ public class playerArrowIce : MonoBehaviour {
 	private float avg_time_per_push;
 	private float avg_time_per_move;
 	private float game_time;
+	private float session_time; // time spent in all games combined
+	private float sessionStart_time;
 
 	/* PLAYER LOCATION DATA */
 	private int left_squares_player;
@@ -92,6 +94,7 @@ public class playerArrowIce : MonoBehaviour {
 	void Awake() {
 		victorious = false;
 		startTime = Time.time;
+		sessionStart_time = startTime;
 		prevActionEndTime = startTime;
 		prevMoveEndTime = startTime;
 		prevPushEndTime = startTime;
@@ -389,7 +392,6 @@ public class playerArrowIce : MonoBehaviour {
 	// only when "Play Again? No" button is clicked
 	// (end game data has already been logged)
 	public void saveAndQuit() {
-		logEndGameData();
 		resultStr += "NO__\nEND_SESSION,no__";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
@@ -397,10 +399,12 @@ public class playerArrowIce : MonoBehaviour {
 
 	private void SendSaveResult()
 	{
+		session_time = Time.time - sessionStart_time;
 		resultStr += "ATTEMPTS," + plays + "__";
 		resultStr += "RESETS," + resets + "__";
 		resultStr += "VICTORIES," + victories + "__";
-		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		resultStr += "SESSION_TIME," + session_time + "__";
+		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		Debug.Log(resultStr);
 
 	}
@@ -422,6 +426,7 @@ public class playerArrowIce : MonoBehaviour {
 		pushes = 0;
 		successfulPushes = 0;
 		avg_time_per_move = 0f;
+		startTime = Time.time;
 		avg_turns_per_move = 0f;
 		avg_turns_per_action = 0f;
 		avg_turns_per_push = 0f;

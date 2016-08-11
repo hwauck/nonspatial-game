@@ -36,6 +36,8 @@ public class playerArrowStatue : MonoBehaviour {
 	private float prevMoveEndTime;
 	private int turns;
 	private float game_time;
+	private float session_time; // time spent in all games combined
+	private float sessionStart_time;
 	//ratio: # moves on left side of board/# moves of right side
 	private int left_squares;
 	private int right_squares;
@@ -82,6 +84,7 @@ public class playerArrowStatue : MonoBehaviour {
 	void Awake() {
 		victorious = false;
 		startTime = Time.time;
+		sessionStart_time = startTime;
 		prevMoveEndTime = startTime;
 	}
 
@@ -402,7 +405,6 @@ public class playerArrowStatue : MonoBehaviour {
 	// (end game data has already been logged)
 	public void saveAndQuit() {
 		//resultStr +="QUIT__";
-		logEndGameData();
 		resultStr += "NO__\nEND_SESSION,no__";
 
 		SendSaveResult();
@@ -410,11 +412,13 @@ public class playerArrowStatue : MonoBehaviour {
 	}
 
 	private void SendSaveResult()
-	{
+	{	
+		session_time = Time.time - sessionStart_time;
 		resultStr += "ATTEMPTS," + plays + "__";
 		resultStr += "RESETS," + resets + "__";
 		resultStr += "VICTORIES," + victories + "__";
-		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		resultStr += "SESSION_TIME," + session_time + "__";
+		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		Debug.Log(resultStr);
 
 	}
@@ -433,6 +437,7 @@ public class playerArrowStatue : MonoBehaviour {
 		//Data collection variables
 		moves = 0;
 		turns = 0;
+		startTime = Time.time;
 		avg_time_per_move = 0f;
 		avg_turns_per_move = 0f;
 		squares_explored_list = new List<string>();

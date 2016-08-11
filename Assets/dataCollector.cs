@@ -6,10 +6,10 @@ public class dataCollector : MonoBehaviour {
 
 	// pre-game survey
 	private string gender; // M, F, or O
-	private int age; // up to 99
+	private string age; // up to 99
 	private int gameExperience; // 1 to 6
 	private string gamesPlayed; // free response up to 300 characters
-	private int numRepeatedPlays; // 0 to (4 or more)
+	private string playedBefore; // Yes, No, or blank
 
 	// post-game survey
 	private int howFun;
@@ -49,19 +49,19 @@ public class dataCollector : MonoBehaviour {
 		//TODO
 		// What if the player leaves these blank? Do they have a "default" value?
 		//SANITIZE INPUT
-		string allData = "NEW_GAME__";
-		allData += "Gender:" + gender + "__";
-		allData += "Age:" + age + "__";
-		allData += "gameExp:" + gameExperience.ToString() + "__";
-		allData += "gamesPlayed:" + gamesPlayed + "__";
-		allData += "numRepeatedPlays:" + numRepeatedPlays.ToString() + "__";
+		string allData = "NEW_PLAYER__";
+		allData += "GENDER," + gender + "__";
+		allData += "AGE," + age + "__";
+		allData += "GAME_EXP," + gameExperience + "__";
+		allData += "GAMES_PLAYED," + gamesPlayed + "__";
 
 		allData += playerData;
 
-		allData += "howFun:" + howFun.ToString() + "__";
-		allData += "howBoring:" + howBoring.ToString() + "__";
-		allData += "howEasy:" + howEasy.ToString() + "__";
-		allData += "howFrustrating:" + howFrustrating.ToString() + "___";
+		allData += "PLAYED_THIS_GAME_BEFORE," + playedBefore + "__";
+		allData += "HOW_FUN," + howFun + "__";
+		allData += "HOW_BORING," + howBoring + "__";
+		allData += "HOW_EASY," + howEasy + "__";
+		allData += "HOW_FRUSTRATING," + howFrustrating + "___";
 
 		Debug.Log(allData);
 		string sendurl = "http://spatialcs.web.engr.illinois.edu/SaveData.php?savedata=\"";
@@ -74,39 +74,53 @@ public class dataCollector : MonoBehaviour {
 
 	}
 
-	private void setGender(string gender) {
-		this.gender = gender;
+	public void setGender(int gender) {
+		if (gender == 1) {
+			this.gender = "F";
+		} else if (gender == 2) {
+			this.gender = "M";
+		} else if (gender == 3) {
+			this.gender = "O";
+		} else {
+			this.gender = "";
+		}
 	}
 
-	private void setAge(int age) {
+	public void setAge(string age) {
 		this.age = age;
 	}
 
-	private void setGameExperience(int gameExperience) {
+	public void setGameExperience(int gameExperience) {
 		this.gameExperience = gameExperience;
 	}
 
-	private void setGamesPlayed(string gamesPlayed) {
+	public void setGamesPlayed(string gamesPlayed) {
 		this.gamesPlayed = gamesPlayed;
 	}
 
-	private void setNumRepeatedPlays(int numRepeatedPlays) {
-		this.numRepeatedPlays = numRepeatedPlays;
+	public void setPlayedBefore(int playedBefore) {
+		if (playedBefore == 1){
+			this.playedBefore = "Y";
+		} else if (playedBefore == 2) {
+			this.playedBefore = "N";
+		} else {
+			this.playedBefore = "";
+		}
 	}
 
-	private void setHowFun(int howFun) {
+	public void setHowFun(int howFun) {
 		this.howFun = howFun;
 	}
 
-	private void setHowBoring(int howBoring) {
+	public void setHowBoring(int howBoring) {
 		this.howBoring = howBoring;
 	}
 
-	private void setHowEasy(int howEasy) {
+	public void setHowEasy(int howEasy) {
 		this.howEasy = howEasy;
 	}
 
-	private void setHowFrustrating(int howFrustrating) {
+	public void setHowFrustrating(int howFrustrating) {
 		this.howFrustrating = howFrustrating;
 	}
 }
