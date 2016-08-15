@@ -709,38 +709,41 @@ public class playerArrowIce : MonoBehaviour {
 				victories++;
 				displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
-				turns++;
-				turnDown ();
+				if(approximately(direction, Vector3.down)) {
+					// move down
+					tryMove();
+				} else {
+					// turn down
+					turns++;
+					turnDown ();
+				}
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-				turns++;
-				turnUp ();
+				if(approximately(direction, Vector3.up)) {
+					// move up
+					tryMove();
+				} else {
+					// turn up
+					turns++;
+					turnUp ();
+				}
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				turns++;				
-				turnRight ();
+				if(approximately(direction, Vector3.right)) {
+					// move right
+					tryMove();
+				} else {
+					// turn right
+					turns++;				
+					turnRight ();
+				}
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-				turns++;
-				turnLeft ();
-			} else if(Input.GetKeyDown(KeyCode.F)) {
-				logActionData ();
-				bool[] errorsPlayer = getErrorType ();
-				if(!errorsPlayer[0] && !errorsPlayer[1]) {
-					// player moves physically in the direction they are turned
-					logMoveData();
-					string newLoc = move();
-					countLeftRightSymmetry(newLoc); // includes repetitions
-					countTopBottomSymmetry(newLoc); //includes repetitions
-
-				} else if(errorsPlayer[1]) {
-					//Player blocked by ice, move ice if possible
-					logPushData();
-					foreach(iceBlock i in ices) {
-						if(predictedSquare == i.square) {
-							push(i);
-						}
-
-					}
-
-				} 
+				if(approximately(direction, Vector3.left)) {
+					// move left
+					tryMove();
+				} else {
+					// turn left
+					turns++;
+					turnLeft ();
+				}
 			} 
 		}
 
@@ -757,5 +760,28 @@ public class playerArrowIce : MonoBehaviour {
 			}
 		}
 		return false;
+	}
+
+	private void tryMove() {
+		logActionData ();
+		bool[] errorsPlayer = getErrorType ();
+		if(!errorsPlayer[0] && !errorsPlayer[1]) {
+			// player moves physically in the direction they are turned
+			logMoveData();
+			string newLoc = move();
+			countLeftRightSymmetry(newLoc); // includes repetitions
+			countTopBottomSymmetry(newLoc); //includes repetitions
+
+		} else if(errorsPlayer[1]) {
+			//Player blocked by ice, move ice if possible
+			logPushData();
+			foreach(iceBlock i in ices) {
+				if(predictedSquare == i.square) {
+					push(i);
+				}
+
+			}
+
+		} 
 	}
 }

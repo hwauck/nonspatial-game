@@ -95,7 +95,7 @@ public class playerArrowStatue : MonoBehaviour {
 		SAT = GameObject.Find ("statueArrowTop");
 		statueArrowBottom = (statueArrow)SAB.GetComponent("statueArrow");
 		statueArrowTop = (statueArrow)SAT.GetComponent("statueArrow");
-		direction = new Vector3(0,0,0);
+		direction = Vector3.up;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
@@ -658,101 +658,46 @@ public class playerArrowStatue : MonoBehaviour {
 				resultStr +="VICTORY__";
 				displayOptions();
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
-				turns++;
+				if(approximately(direction, Vector3.down)) {
+					// move down
+					tryMove();
+				} else {
+					// turn down
+					turns++;
+					turnDown ();
+					statueArrowBottom.turnDown ();
+					statueArrowTop.turnUp ();
+				}
 
-				turnDown ();
-				statueArrowBottom.turnDown ();
-				statueArrowTop.turnUp ();
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-				turns++;
-
-				turnUp ();
-				statueArrowBottom.turnUp ();
-				statueArrowTop.turnDown ();
+				if(approximately(direction, Vector3.up)) {
+					// move up
+					tryMove();
+				} else {
+					turns++;
+					turnUp ();
+					statueArrowBottom.turnUp ();
+					statueArrowTop.turnDown ();
+				}
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				turns++;
-
-				turnRight ();
-				statueArrowBottom.turnRight ();
-				statueArrowTop.turnLeft ();
+				if(approximately(direction, Vector3.right)) {
+					// move right
+					tryMove();
+				} else {
+					turns++;
+					turnRight ();
+					statueArrowBottom.turnRight ();
+					statueArrowTop.turnLeft ();
+				}
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-				turns++;
-
-				turnLeft ();
-				statueArrowBottom.turnLeft ();
-				statueArrowTop.turnRight ();
-			} else if(Input.GetKeyDown(KeyCode.F)) {
-				logMoveData ();
-				bool[] errorsPlayer = getErrorType ();
-				if(!errorsPlayer[0] && !errorsPlayer[1] && !errorsPlayer[2]) {
-					string newLoc = move ();
-					moves++;
-					countLeftRightSymmetry(newLoc);
-					countTopBottomSymmetry(newLoc);
-					bool[] errorsBottom = statueArrowBottom.getErrorType ();
-					
-					if(errorsBottom[1]) {
-						//if there is a statue collision
-						//resultStr +=",-1,-1__";
-						statuesCollide++;
-						StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.1f));
-					} else if (errorsBottom[2]) {
-						//if there is a statue blocking
-						//resultStr +=",-1,-1__";
-						statuesBlockEachOther++;
-						StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.05f));
-					}else {
-						bool[] errorsTop = statueArrowTop.getErrorType();
-						if(!errorsBottom[0]) {
-							//not offscreen
-							string bottomStatuePredicted = statueArrowBottom.getPredictedSquare();
-							IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
-							IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
-							if(bottomStatue_squares_explored.Contains(bottomStatuePredicted) || topStatue_squares_explored.Contains(bottomStatuePredicted)) {
-								num_repeated_squares_statues++;
-							} else {
-								squares_explored_statues++;
-							}
-							countStatueSymmetry(bottomStatuePredicted);
-							string newLocStatue = statueArrowBottom.move();
-		
-							//resultStr +="," + newLocStatue+ "__";
-						} else {
-							// tried to move offscreen
-							statueBlockedByOffscreen++;
-							//resultStr +=",-1__";
-						}
-						if(!errorsTop[0]) {
-							// not offscreen
-							string topStatuePredicted = statueArrowTop.getPredictedSquare();
-							IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
-							IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
-							if(bottomStatue_squares_explored.Contains(topStatuePredicted) || topStatue_squares_explored.Contains(topStatuePredicted)) {
-								num_repeated_squares_statues++;
-							} else {
-								squares_explored_statues++;
-							}
-							countStatueSymmetry(topStatuePredicted);
-							string newLocStatue = statueArrowTop.move();
-							//resultStr +="," + newLocStatue+"__";
-						} else {
-							// tried to move offscreen
-							statueBlockedByOffscreen++;
-							//resultStr +=",-1"+"__";
-						}
-					}
-				} else if(errorsPlayer[1]) {
-					//if player collides with statue (has to be top statue)
-					playerStatueCollide++;
-					StartCoroutine (collisionHelper(this.gameObject, SAT, transform.position, SAT.transform.position, 0.1f));
-				} else if (errorsPlayer[2]) {
-					//if player is blocked by a statue (could be either one)
-					playerBlockedByStatue++;
-					if(predictedSquare == statueArrowBottom.square) {
-						StartCoroutine (collisionHelperOneSided(this.gameObject, SAB, transform.position, 0.05f));
-					} else if(predictedSquare == statueArrowTop.square) {
-						StartCoroutine (collisionHelperOneSided(this.gameObject, SAT, transform.position, 0.05f));
-					}
+				if(approximately(direction, Vector3.left)) {
+					// move left
+					tryMove();
+				} else {
+					turns++;
+					turnLeft ();
+					statueArrowBottom.turnLeft ();
+					statueArrowTop.turnRight ();
 				}
 			} 
 		}
@@ -761,7 +706,80 @@ public class playerArrowStatue : MonoBehaviour {
 		
 
 
+	private void tryMove() {
+		logMoveData ();
+		bool[] errorsPlayer = getErrorType ();
+		if(!errorsPlayer[0] && !errorsPlayer[1] && !errorsPlayer[2]) {
+			string newLoc = move ();
+			moves++;
+			countLeftRightSymmetry(newLoc);
+			countTopBottomSymmetry(newLoc);
+			bool[] errorsBottom = statueArrowBottom.getErrorType ();
 
+			if(errorsBottom[1]) {
+				//if there is a statue collision
+				//resultStr +=",-1,-1__";
+				statuesCollide++;
+				StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.1f));
+			} else if (errorsBottom[2]) {
+				//if there is a statue blocking
+				//resultStr +=",-1,-1__";
+				statuesBlockEachOther++;
+				StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.05f));
+			}else {
+				bool[] errorsTop = statueArrowTop.getErrorType();
+				if(!errorsBottom[0]) {
+					//not offscreen
+					string bottomStatuePredicted = statueArrowBottom.getPredictedSquare();
+					IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
+					IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
+					if(bottomStatue_squares_explored.Contains(bottomStatuePredicted) || topStatue_squares_explored.Contains(bottomStatuePredicted)) {
+						num_repeated_squares_statues++;
+					} else {
+						squares_explored_statues++;
+					}
+					countStatueSymmetry(bottomStatuePredicted);
+					string newLocStatue = statueArrowBottom.move();
+
+					//resultStr +="," + newLocStatue+ "__";
+				} else {
+					// tried to move offscreen
+					statueBlockedByOffscreen++;
+					//resultStr +=",-1__";
+				}
+				if(!errorsTop[0]) {
+					// not offscreen
+					string topStatuePredicted = statueArrowTop.getPredictedSquare();
+					IList<string> bottomStatue_squares_explored = statueArrowBottom.getSquaresExplored();
+					IList<string> topStatue_squares_explored = statueArrowTop.getSquaresExplored();
+					if(bottomStatue_squares_explored.Contains(topStatuePredicted) || topStatue_squares_explored.Contains(topStatuePredicted)) {
+						num_repeated_squares_statues++;
+					} else {
+						squares_explored_statues++;
+					}
+					countStatueSymmetry(topStatuePredicted);
+					string newLocStatue = statueArrowTop.move();
+					//resultStr +="," + newLocStatue+"__";
+				} else {
+					// tried to move offscreen
+					statueBlockedByOffscreen++;
+					//resultStr +=",-1"+"__";
+				}
+			}
+		} else if(errorsPlayer[1]) {
+			//if player collides with statue (has to be top statue)
+			playerStatueCollide++;
+			StartCoroutine (collisionHelper(this.gameObject, SAT, transform.position, SAT.transform.position, 0.1f));
+		} else if (errorsPlayer[2]) {
+			//if player is blocked by a statue (could be either one)
+			playerBlockedByStatue++;
+			if(predictedSquare == statueArrowBottom.square) {
+				StartCoroutine (collisionHelperOneSided(this.gameObject, SAB, transform.position, 0.05f));
+			} else if(predictedSquare == statueArrowTop.square) {
+				StartCoroutine (collisionHelperOneSided(this.gameObject, SAT, transform.position, 0.05f));
+			}
+		}
+	}
 		
 }	
 
