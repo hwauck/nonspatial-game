@@ -23,7 +23,7 @@ public class pregameSurvey : MonoBehaviour {
 		updateAge();
 		updateGameExp();
 		updateGamesPlayed();
-		string[] games = {"puzzle", "ice", "tile"};
+		string[] games = {"puzzle", "ice", "tileHard"};
 		SceneManager.LoadScene(games[Random.Range(0,3)]);
 
 	}

@@ -46,15 +46,12 @@ public class playerArrowStatue : MonoBehaviour {
 	private int num_repeated_squares;
 	private int num_traversed_squares; // total displacement, including repeated squares
 	private int squares_explored;
-	private float avg_time_per_move;
-	private float avg_turns_per_move;
+	private float movementTime;
 	private IList<string> squares_explored_list;
 	private IList<string> left_squares_list;
 	private IList<string> right_squares_list;
 	private IList<string> top_squares_list;
 	private IList<string> bottom_squares_list;
-	private float left_right_symmetry;
-	private float top_bottom_symmetry;
 
 	// number of times all statues and player move
 	private int all_move;
@@ -76,8 +73,6 @@ public class playerArrowStatue : MonoBehaviour {
 	private int right_squares_statues;
 	private int bottom_squares_statues;
 	private int top_squares_statues;
-	private float left_right_symmetry_statues;
-	private float top_bottom_symmetry_statues;
 
 	string resultStr;
 
@@ -107,11 +102,10 @@ public class playerArrowStatue : MonoBehaviour {
 		plays = 1;
 		victories = 0;
 		resets = 0;
-		resultStr = "NEW_GAME,statue__";
+		resultStr = "NEW_GAME,statue,";
 		moves = 0;
 		turns = 0;
-		avg_time_per_move = 0f;
-		avg_turns_per_move = 0f;
+		movementTime = 0f;
 		squares_explored_list = new List<string>();
 		squares_explored_list.Add ("23");
 		left_squares = 0;
@@ -121,8 +115,6 @@ public class playerArrowStatue : MonoBehaviour {
 		squares_explored = 0;
 		num_repeated_squares = 0;
 		num_traversed_squares = 1;
-		left_right_symmetry = -1f;
-		top_bottom_symmetry = -1f;
 		all_move = 0;
 		two_move = 0;
 		player_only_moves = 0;
@@ -140,8 +132,6 @@ public class playerArrowStatue : MonoBehaviour {
 		right_squares_statues = 0;
 		bottom_squares_statues = 1;
 		top_squares_statues = 1;
-		left_right_symmetry_statues = -1f;
-		top_bottom_symmetry_statues = -1f;
 
 		left_squares_list = new List<string>();
 		left_squares_list.Add ("00");
@@ -375,10 +365,9 @@ public class playerArrowStatue : MonoBehaviour {
 	// logs end game data, increments resets, and saves results to database
 	// only when "Play Again? Yes" button is clicked
 	public void newGame() {
-		//resultStr += "RESET__";
 		plays++;
 		reset();
-		resultStr += "\nNEW_GAME,statue__";
+		resultStr += "NEW_GAME,statue,";
 	}
 		
 	// when the "Reset" button is clicked
@@ -387,7 +376,7 @@ public class playerArrowStatue : MonoBehaviour {
 		plays++;
 		logEndGameData();
 		reset();
-		resultStr += "RESET__\nNEW_ATTEMPT,statue__";
+		resultStr += "OUTCOME,RESET,NEW_ATTEMPT,statue,";
 
 	}
 
@@ -395,7 +384,7 @@ public class playerArrowStatue : MonoBehaviour {
 	// (end game data has not yet been logged)
 	public void buttonQuit() {
 		logEndGameData();
-		resultStr += "DONE__\nEND_SESSION,done__";
+		resultStr += "OUTCOME,QUIT,END_SESSION,done,";
 
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
@@ -404,8 +393,7 @@ public class playerArrowStatue : MonoBehaviour {
 	// only when "Play Again? No" button is clicked
 	// (end game data has already been logged)
 	public void saveAndQuit() {
-		//resultStr +="QUIT__";
-		resultStr += "NO__\nEND_SESSION,no__";
+		resultStr += "END_SESSION,no,";
 
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
@@ -414,10 +402,10 @@ public class playerArrowStatue : MonoBehaviour {
 	private void SendSaveResult()
 	{	
 		session_time = Time.time - sessionStart_time;
-		resultStr += "ATTEMPTS," + plays + "__";
-		resultStr += "RESETS," + resets + "__";
-		resultStr += "VICTORIES," + victories + "__";
-		resultStr += "SESSION_TIME," + session_time + "__";
+		resultStr += "ATTEMPTS," + plays + ",";
+		resultStr += "RESETS," + resets + ",";
+		resultStr += "VICTORIES," + victories + ",";
+		resultStr += "SESSION_TIME," + session_time;
 		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		Debug.Log(resultStr);
 
@@ -438,8 +426,7 @@ public class playerArrowStatue : MonoBehaviour {
 		moves = 0;
 		turns = 0;
 		startTime = Time.time;
-		avg_time_per_move = 0f;
-		avg_turns_per_move = 0f;
+		movementTime = 0f;
 		squares_explored_list = new List<string>();
 		squares_explored_list.Add ("23");
 		left_squares = 0;
@@ -449,8 +436,6 @@ public class playerArrowStatue : MonoBehaviour {
 		squares_explored = 0;
 		num_repeated_squares = 0;
 		num_traversed_squares = 1;
-		left_right_symmetry = -1f;
-		top_bottom_symmetry = -1f;
 		all_move = 0;
 		two_move = 0;
 		player_only_moves = 0;
@@ -468,8 +453,6 @@ public class playerArrowStatue : MonoBehaviour {
 		right_squares_statues = 0;
 		bottom_squares_statues = 1;
 		top_squares_statues = 1;
-		left_right_symmetry_statues = -1f;
-		top_bottom_symmetry_statues = -1f;
 
 		statueArrowBottom.reset ();
 		statueArrowTop.reset ();
@@ -513,7 +496,7 @@ public class playerArrowStatue : MonoBehaviour {
 		// subtract the previous move time from the current move time
 		float currentTime = Time.time;
 		float currentMoveTime = currentTime - prevMoveEndTime;
-		avg_time_per_move += currentMoveTime;
+		movementTime += currentMoveTime;
 		prevMoveEndTime = currentTime;
 		if(canMove() && statueArrowBottom.canMove() && statueArrowTop.canMove ()) {
 			all_move++;
@@ -539,84 +522,48 @@ public class playerArrowStatue : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
-		if(moves == 0) {
-			avg_time_per_move = -1f;
-			avg_turns_per_move = -1f;
-		} else {
-			avg_time_per_move = avg_time_per_move/moves;
-			avg_turns_per_move = turns/(moves * 1.0f);
-		}
-
 		squares_explored = squares_explored_list.Count;
-
-		if(right_squares == 0) {
-			left_right_symmetry = -1f;
-		} else {
-			left_right_symmetry = (left_squares / (right_squares * 1.0f));
-		}
-		if(bottom_squares == 0) {
-			top_bottom_symmetry = -1f;
-		} else {
-			top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
-		}
-
 		game_time = (Time.time - startTime);
 		num_traversed_squares_statues = statueArrowBottom.getNumTraversedSquares() 
 			+ statueArrowTop.getNumTraversedSquares();
 
-		if(right_squares_statues == 0) {
-			left_right_symmetry_statues = -1f;
-		} else {
-			left_right_symmetry_statues = (left_squares_statues / (right_squares_statues * 1.0f));
-		}
-		if(bottom_squares_statues == 0) {
-			top_bottom_symmetry_statues = -1f;
-		} else {
-			top_bottom_symmetry_statues = (top_squares_statues / (bottom_squares_statues * 1.0f));
-		}
-
 		/* PLAYER MOVEMENT DATA */
-		resultStr +="TOTAL_MOVES," + moves+"__";
-		resultStr += "TURNS," + turns +"__";
-		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+"__";
-		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move.ToString()+"__";
-		resultStr +="NUM_SQUARES_TRAVERSED," + num_traversed_squares+"__";
-		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+"__";
-		resultStr +="NUM_REPEATED_SQUARES," + num_repeated_squares+"__";
+		resultStr +="TOTAL_MOVES," + moves+",";
+		resultStr += "TURNS," + turns +",";
+		resultStr +="TIME_SPENT_MOVING," + movementTime.ToString()+",";
+		resultStr +="NUM_SQUARES_TRAVERSED," + num_traversed_squares+",";
+		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+",";
+		resultStr +="NUM_REPEATED_SQUARES," + num_repeated_squares+",";
 
 		/* PLAYER LOCATION DATA */
-		resultStr += "LEFT_SQUARES," + left_squares + "__";
-		resultStr += "RIGHT_SQUARES," + right_squares + "__";
-		resultStr += "TOP_SQUARES," + top_squares + "__";
-		resultStr += "BOTTOM_SQUARES," + bottom_squares + "__";
-		resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +"__";
-		resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +"__";
+		resultStr += "LEFT_SQUARES," + left_squares + ",";
+		resultStr += "RIGHT_SQUARES," + right_squares + ",";
+		resultStr += "TOP_SQUARES," + top_squares + ",";
+		resultStr += "BOTTOM_SQUARES," + bottom_squares + ",";
 
 		/* COLLISION DATA */
-		resultStr +="PLAYER_STATUE_COLLIDE," + playerStatueCollide + "__";
-		resultStr +="PLAYER_BLOCKED_BY_STATUE," + playerBlockedByStatue + "__";
-		resultStr +="STATUES_BLOCK_EACH_OTHER," + statuesBlockEachOther + "__";
-		resultStr +="STATUES_COLLIDE," + statuesCollide + "__";
-		resultStr +="STATUE_BLOCKED_BY_OFFSCREEN," + statueBlockedByOffscreen + "__";
+		resultStr +="PLAYER_STATUE_COLLIDE," + playerStatueCollide + ",";
+		resultStr +="PLAYER_BLOCKED_BY_STATUE," + playerBlockedByStatue + ",";
+		resultStr +="STATUES_BLOCK_EACH_OTHER," + statuesBlockEachOther + ",";
+		resultStr +="STATUES_COLLIDE," + statuesCollide + ",";
+		resultStr +="STATUE_BLOCKED_BY_OFFSCREEN," + statueBlockedByOffscreen + ",";
 
 		/* STATUE ARROW MOVEMENT DATA */
-		resultStr += "STATUE_SQUARES_TRAVERSED," + num_traversed_squares_statues + "__";
-		resultStr += "STATUE_SQUARES_EXPLORED," + squares_explored_statues + "__";
-		resultStr += "STATUE_SQUARES_REPEATED," + num_repeated_squares_statues + "__";
+		resultStr += "STATUE_SQUARES_TRAVERSED," + num_traversed_squares_statues + ",";
+		resultStr += "STATUE_SQUARES_EXPLORED," + squares_explored_statues + ",";
+		resultStr += "STATUE_SQUARES_REPEATED," + num_repeated_squares_statues + ",";
 
-		resultStr += "STATUE_LEFT_SQUARES," + left_squares_statues + "__";
-		resultStr += "STATUE_RIGHT_SQUARES," + right_squares_statues + "__";
-		resultStr += "STATUE_TOP_SQUARES," + top_squares_statues + "__";
-		resultStr += "STATUE_BOTTOM_SQUARES," + bottom_squares_statues + "__";
-		resultStr += "STATUE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_statues + "__";
-		resultStr += "STATUE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_statues + "__";	
+		resultStr += "STATUE_LEFT_SQUARES," + left_squares_statues + ",";
+		resultStr += "STATUE_RIGHT_SQUARES," + right_squares_statues + ",";
+		resultStr += "STATUE_TOP_SQUARES," + top_squares_statues + ",";
+		resultStr += "STATUE_BOTTOM_SQUARES," + bottom_squares_statues + ",";	
 
 		/* COMBINED MOVEMENT DATA */
-		resultStr +="ALL_MOVE," + all_move.ToString()+"__"; //redundant with collision vars?
-		resultStr +="TWO_MOVE," + two_move.ToString()+"__"; //redundant with collision vars?
-		resultStr +="ONE_MOVE," + player_only_moves.ToString()+"__"; //redundant with collision vars?
+		resultStr +="ALL_MOVE," + all_move.ToString()+","; //redundant with collision vars?
+		resultStr +="TWO_MOVE," + two_move.ToString()+","; //redundant with collision vars?
+		resultStr +="ONE_MOVE," + player_only_moves.ToString()+","; //redundant with collision vars?
 
-		resultStr +="TOTAL_TIME," + game_time+"__";
+		resultStr +="TOTAL_TIME," + game_time + ",";
 
 	}
 
@@ -655,7 +602,7 @@ public class playerArrowStatue : MonoBehaviour {
 			if(victory()) {
 				victories++;
 				logEndGameData ();
-				resultStr +="VICTORY__";
+				resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				if(approximately(direction, Vector3.down)) {
@@ -718,12 +665,10 @@ public class playerArrowStatue : MonoBehaviour {
 
 			if(errorsBottom[1]) {
 				//if there is a statue collision
-				//resultStr +=",-1,-1__";
 				statuesCollide++;
 				StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.1f));
 			} else if (errorsBottom[2]) {
 				//if there is a statue blocking
-				//resultStr +=",-1,-1__";
 				statuesBlockEachOther++;
 				StartCoroutine (collisionHelper (SAB, SAT, SAB.transform.position, SAT.transform.position, 0.05f));
 			}else {
@@ -741,11 +686,9 @@ public class playerArrowStatue : MonoBehaviour {
 					countStatueSymmetry(bottomStatuePredicted);
 					string newLocStatue = statueArrowBottom.move();
 
-					//resultStr +="," + newLocStatue+ "__";
 				} else {
 					// tried to move offscreen
 					statueBlockedByOffscreen++;
-					//resultStr +=",-1__";
 				}
 				if(!errorsTop[0]) {
 					// not offscreen
@@ -759,11 +702,9 @@ public class playerArrowStatue : MonoBehaviour {
 					}
 					countStatueSymmetry(topStatuePredicted);
 					string newLocStatue = statueArrowTop.move();
-					//resultStr +="," + newLocStatue+"__";
 				} else {
 					// tried to move offscreen
 					statueBlockedByOffscreen++;
-					//resultStr +=",-1"+"__";
 				}
 			}
 		} else if(errorsPlayer[1]) {

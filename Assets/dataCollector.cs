@@ -9,9 +9,9 @@ public class dataCollector : MonoBehaviour {
 	private string age; // up to 99
 	private int gameExperience; // 1 to 6
 	private string gamesPlayed; // free response up to 300 characters
-	private string playedBefore; // Yes, No, or blank
 
 	// post-game survey
+	private string playedBefore; // Yes, No, or blank
 	private int howFun;
 	private int howBoring;
 	private int howEasy;
@@ -49,22 +49,39 @@ public class dataCollector : MonoBehaviour {
 		//TODO
 		// What if the player leaves these blank? Do they have a "default" value?
 		//SANITIZE INPUT
-		string allData = "NEW_PLAYER__";
-		allData += "GENDER," + gender + "__";
-		allData += "AGE," + age + "__";
-		allData += "GAME_EXP," + gameExperience + "__";
-		allData += "GAMES_PLAYED," + gamesPlayed + "__";
+		string allData = "";
+		allData += "GENDER," + gender + ",";
+		allData += "AGE," + age + ",";
+		allData += "GAME_EXP," + gameExperience + ",";
 
-		allData += playerData;
+		// the ' character is used to indicate beginning and end of player data section
+		allData += "GAMES_PLAYED,'" + gamesPlayed + "',";
+		string gameType;
+		if(playerData.Contains("statue")) {
+			gameType = "statue";
+		} else if (playerData.Contains("ice")) {
+			gameType = "ice";
+		} else if (playerData.Contains("tile")) {
+			gameType = "tile";
+		} else {
+			gameType = "???";
+		}
+		allData += "GAME_TYPE," + gameType + ",";
+		int sessionDataPos = playerData.LastIndexOf("END_SESSION");
+		string sessionData = playerData.Substring(sessionDataPos);
+		playerData = playerData.Remove(sessionDataPos);
 
-		allData += "PLAYED_THIS_GAME_BEFORE," + playedBefore + "__";
-		allData += "HOW_FUN," + howFun + "__";
-		allData += "HOW_BORING," + howBoring + "__";
-		allData += "HOW_EASY," + howEasy + "__";
-		allData += "HOW_FRUSTRATING," + howFrustrating + "___";
+		allData += "'" + playerData + "',";
+
+		allData += sessionData + ",";
+		allData += "PLAYED_THIS_GAME_BEFORE," + playedBefore + ",";
+		allData += "HOW_FUN," + howFun + ",";
+		allData += "HOW_BORING," + howBoring + ",";
+		allData += "HOW_EASY," + howEasy + ",";
+		allData += "HOW_FRUSTRATING," + howFrustrating;
 
 		Debug.Log(allData);
-		string sendurl = "http://spatialcs.web.engr.illinois.edu/SaveData.php?savedata=\"";
+		string sendurl = "http://puzzleweb.web.engr.illinois.edu/SaveData.php?savedata=\"";
 		sendurl += allData + "\"";
 		WWW www = new WWW(sendurl);
 
