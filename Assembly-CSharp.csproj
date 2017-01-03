@@ -55,6 +55,7 @@
      <Compile Include="Assets\playerArrowStatue.cs" />
      <Compile Include="Assets\playerArrowTile.cs" />
      <Compile Include="Assets\postgameSurvey.cs" />
+     <Compile Include="Assets\postgame_survey_hints.cs" />
      <Compile Include="Assets\pregameSurvey.cs" />
      <Compile Include="Assets\square.cs" />
      <Compile Include="Assets\statueArrow.cs" />

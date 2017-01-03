@@ -10,6 +10,11 @@ public class dataCollector : MonoBehaviour {
 	private int gameExperience; // 1 to 6
 	private string gamesPlayed; // free response up to 300 characters
 
+	//post-game hints survey
+	private string sawHints;
+	private int howHelpful;
+	private string why;
+
 	// post-game survey
 	private string playedBefore; // Yes, No, or blank
 	private int howFun;
@@ -67,6 +72,7 @@ public class dataCollector : MonoBehaviour {
 			gameType = "???";
 		}
 		allData += "GAME_TYPE," + gameType + ",";
+		//Debug.Log("Copy of playerData that dataCollector has: " + playerData);
 		int sessionDataPos = playerData.LastIndexOf("END_SESSION");
 		string sessionData = playerData.Substring(sessionDataPos);
 		playerData = playerData.Remove(sessionDataPos);
@@ -78,9 +84,13 @@ public class dataCollector : MonoBehaviour {
 		allData += "HOW_FUN," + howFun + ",";
 		allData += "HOW_BORING," + howBoring + ",";
 		allData += "HOW_EASY," + howEasy + ",";
-		allData += "HOW_FRUSTRATING," + howFrustrating;
+		allData += "HOW_FRUSTRATING," + howFrustrating + ",";
 
-		Debug.Log(allData);
+		allData += "SAW_HINTS," + sawHints + ",";
+		allData += "HOW_HELPFUL," + howHelpful + ",";
+		allData += "HINTS_WHY,'" + why + "'";
+
+		//Debug.Log(allData);
 		string sendurl = "http://puzzleweb.web.engr.illinois.edu/SaveData.php?savedata=\"";
 		sendurl += allData + "\"";
 		WWW www = new WWW(sendurl);
@@ -125,6 +135,16 @@ public class dataCollector : MonoBehaviour {
 		}
 	}
 
+	public void setSawHints(int sawHints) {
+		if (sawHints == 1){
+			this.sawHints = "Y";
+		} else if (sawHints == 2) {
+			this.sawHints = "N";
+		} else {
+			this.sawHints = "";
+		}
+	}
+
 	public void setHowFun(int howFun) {
 		this.howFun = howFun;
 	}
@@ -139,5 +159,13 @@ public class dataCollector : MonoBehaviour {
 
 	public void setHowFrustrating(int howFrustrating) {
 		this.howFrustrating = howFrustrating;
+	}
+
+	public void setHowHelpful(int howHelpful) {
+		this.howHelpful = howHelpful;
+	}
+
+	public void setWhy(string why) {
+		this.why = why;
 	}
 }

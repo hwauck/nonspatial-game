@@ -59,7 +59,7 @@ public class playerArrowTile : MonoBehaviour {
 	private string pathTrace;
 	private int pathTurns;
 	private int longest_straight_path;
-	private float avg_turns_per_displacement; // actual turns in path made divided by length of path
+	private float avg_path_turns_per_move; // actual turns in path made divided by length of path
 
 	private IList<string> left_squares_list;
 	private IList<string> right_squares_list;
@@ -98,7 +98,7 @@ public class playerArrowTile : MonoBehaviour {
 		pathTrace = coordinatesToSquare(square); //starting square
 		pathTurns = 0;
 		longest_straight_path = 0;
-		avg_turns_per_displacement = 0f;
+		avg_path_turns_per_move = -1f;
 
 		squares_explored = new bool[NUM_COLS,NUM_ROWS];
 		squares_explored[START_COL,START_ROW] = true;
@@ -146,7 +146,6 @@ public class playerArrowTile : MonoBehaviour {
 	// calculates the longest subsequence of this attempt's path trace without a turn
 	// and the avg straight path length for the entire path
 	private int getLongestStraightPath() {
-		Debug.Log(pathTrace);
 		string[] path = pathTrace.Split('-');
 		int curCol, curRow, nextCol, nextRow;
 		int currentColLength = 0;
@@ -380,6 +379,7 @@ public class playerArrowTile : MonoBehaviour {
 		top_bottom_symmetry = -1f;
 		pathTrace = coordinatesToSquare(PLAYER_START_SQUARE);
 		longest_straight_path = 0;
+		avg_path_turns_per_move = -1f;
 		pathTurns = 0;
 
 		squares_explored = new bool[NUM_COLS,NUM_ROWS];
@@ -466,16 +466,16 @@ public class playerArrowTile : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
-		longest_straight_path = getLongestStraightPath(); //also calculates pathTurns value
+		longest_straight_path = getLongestStraightPath(); 
 		game_time = (Time.time - startTime);
 
 		if(moves == 0) {
 			avg_time_per_move = -1f;
-			avg_turns_per_displacement = -1f;
+			avg_path_turns_per_move = -1f;
 
 		} else {
 			avg_time_per_move = avg_time_per_move/moves;
-			avg_turns_per_displacement = pathTurns / (1.0f * moves);
+			avg_path_turns_per_move = pathTurns / (1.0f * moves);
 
 		}
 
@@ -510,12 +510,12 @@ public class playerArrowTile : MonoBehaviour {
 		resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +",";
 		resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +",";
 
-		resultStr +="PATH_TRACE," + pathTrace + ",";
 		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
-		resultStr +="NUM_TURNS_IN_PATH," + pathTurns + ",";
-		resultStr +="AVG_TURNS_PER_DISPLACEMENT," + avg_turns_per_displacement + ",";
+		resultStr +="PATH_TURNS," + pathTurns + ",";
+		resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
 
 		resultStr +="TOTAL_TIME," + game_time + ",";
+		resultStr +="PATH_TRACE," + pathTrace + ",";
 
 	}
 

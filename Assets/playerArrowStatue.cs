@@ -8,11 +8,14 @@ using System.Text;
 using UnityEngine.SceneManagement;
 
 public class playerArrowStatue : MonoBehaviour {
+
+	private HintManager hintManager;
 	private GameObject SAB;
 	private GameObject SAT;
 	private statueArrow statueArrowBottom; 
 	private statueArrow statueArrowTop; 
 	private Vector3 direction;
+	private Vector3 prevMoveDir;
 	private Vector3 right;
 	private Vector3 left;
 	private Vector3 up;
@@ -20,6 +23,7 @@ public class playerArrowStatue : MonoBehaviour {
 	private Vector2 square;
 	private Vector2 predictedSquare;
 	private bool victorious;
+	private bool isColliding;
 
 	//UI for playing a new game
 	private Button yes;
@@ -35,6 +39,9 @@ public class playerArrowStatue : MonoBehaviour {
 	private float startTime;
 	private float prevMoveEndTime;
 	private int turns;
+	private int pathTurns;
+	private int longest_straight_path;
+	private float avg_path_turns_per_move; // actual turns in path made divided by length of path
 	private float game_time;
 	private float session_time; // time spent in all games combined
 	private float sessionStart_time;
@@ -74,23 +81,34 @@ public class playerArrowStatue : MonoBehaviour {
 	private int bottom_squares_statues;
 	private int top_squares_statues;
 
+	/* HINT DATA */
+	private int numHints;
+	private string hintType;
+
+	private string pathTrace;
+
 	string resultStr;
+
+	private bool controlsEnabled;
 
 	void Awake() {
 		victorious = false;
+		isColliding = false;
 		startTime = Time.time;
 		sessionStart_time = startTime;
 		prevMoveEndTime = startTime;
+		controlsEnabled = true;
 	}
 
 	// Use this for initialization
 	void Start () {
-
+		hintManager = GameObject.Find("EventSystem").GetComponent<HintManager>();
 		SAB = GameObject.Find ("statueArrowBottom");
 		SAT = GameObject.Find ("statueArrowTop");
 		statueArrowBottom = (statueArrow)SAB.GetComponent("statueArrow");
 		statueArrowTop = (statueArrow)SAT.GetComponent("statueArrow");
 		direction = Vector3.up;
+		prevMoveDir = direction;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
@@ -105,6 +123,9 @@ public class playerArrowStatue : MonoBehaviour {
 		resultStr = "NEW_GAME,statue,";
 		moves = 0;
 		turns = 0;
+		pathTurns = 0;
+		longest_straight_path = 0;
+		avg_path_turns_per_move = -1f; // actual turns in path made divided by length of path
 		movementTime = 0f;
 		squares_explored_list = new List<string>();
 		squares_explored_list.Add ("23");
@@ -132,6 +153,8 @@ public class playerArrowStatue : MonoBehaviour {
 		right_squares_statues = 0;
 		bottom_squares_statues = 1;
 		top_squares_statues = 1;
+
+		pathTrace = coordinatesToSquare(square); //starting square
 
 		left_squares_list = new List<string>();
 		left_squares_list.Add ("00");
@@ -198,6 +221,61 @@ public class playerArrowStatue : MonoBehaviour {
 	public int getNumMoves() {
 		return moves;
 	}
+		
+
+	// calculates the longest subsequence of this attempt's path trace without a turn
+	// and the avg straight path length for the entire path
+	private int getLongestStraightPath() {
+		string[] path = pathTrace.Split('-');
+		int curCol, curRow, nextCol, nextRow;
+		int currentColLength = 0;
+		int currentRowLength = 0;
+		int longestCol = 0;
+		int longestRow = 0;
+		for(int i = 0; i < path.Length - 1; i++) {
+			if (path[i].Length > 2) { // 3 digit column number
+				curCol = Convert.ToInt32(path[i].Substring(0,2));
+				curRow = Convert.ToInt32(path[i].Substring(2,1));
+			} else { // 2 digit column number (normal)
+				curCol = Convert.ToInt32(path[i].Substring(0,1));
+				curRow = Convert.ToInt32(path[i].Substring(1,1));
+			}
+			if (path[i+1].Length > 2) { // 3 digit column number
+				nextCol = Convert.ToInt32(path[i+1].Substring(0,2));
+				nextRow = Convert.ToInt32(path[i+1].Substring(2,1));
+			} else { // 2 digit column number (normal)
+				nextCol = Convert.ToInt32(path[i+1].Substring(0,1));
+				nextRow = Convert.ToInt32(path[i+1].Substring(1,1));
+			}
+
+			// update longest column so far
+			if(nextCol == curCol) {
+				currentColLength++;
+				if(currentColLength > longestCol) {
+					longestCol = currentColLength;
+				}
+			} else {
+				currentColLength = 1;
+			}
+
+			// update longest row so far
+			if(nextRow == curRow) {
+				currentRowLength++;
+				if(currentRowLength > longestRow) {
+					longestRow = currentRowLength;
+				}
+			} else {
+				currentRowLength = 1;
+			}
+		}
+
+		// set the longest path to the larger of the longest col and row
+		if(longestCol > longestRow) {
+			return longestCol;
+		} else {
+			return longestRow;
+		}
+	}
 
 	private void displayOptions() {
 		victoryPanel.enabled = true;
@@ -244,6 +322,7 @@ public class playerArrowStatue : MonoBehaviour {
 	}
 
 	public IEnumerator collisionHelper(GameObject collider1, GameObject collider2, Vector3 origCollider1pos, Vector3 origCollider2pos, float step) {
+		isColliding = true;
 		Vector3 collider1pos = collider1.transform.position;
 		Vector3 collider2pos = collider2.transform.position;
 		Vector3 halfwayPoint = findHalfwayPoint(collider1pos, collider2pos);
@@ -257,11 +336,13 @@ public class playerArrowStatue : MonoBehaviour {
 		} else {
 			collider1.transform.position = origCollider1pos;
 			collider2.transform.position = origCollider2pos;
+			isColliding = false;
 		}
 	}
 
 	public IEnumerator collisionHelperOneSided(GameObject collider1, GameObject collider2, Vector3 origCollider1pos, float step) {
 		//collider1 will move towards collider2; collider2 remains stationary
+		isColliding = true;
 		Vector3 collider1pos = collider1.transform.position;
 		Vector3 collider2pos = collider2.transform.position;
 		Vector3 halfwayPoint = findHalfwayPoint(origCollider1pos, collider2pos);
@@ -273,6 +354,7 @@ public class playerArrowStatue : MonoBehaviour {
 			StartCoroutine (collisionHelperOneSided (collider1, collider2, origCollider1pos, step));
 		} else {
 			collider1.transform.position = origCollider1pos;
+			isColliding = false;
 		}
 	}
 
@@ -349,9 +431,11 @@ public class playerArrowStatue : MonoBehaviour {
 		transform.Translate(direction * 2f, Space.World);
 		num_traversed_squares++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
+		pathTrace += "-" + predictedSquareName;
 		//resultStr += predictedSquareName;
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
+
 		if(!squares_explored_list.Contains(predictedSquareName)) {
 			squares_explored_list.Add(predictedSquareName);
 		} else {
@@ -407,7 +491,7 @@ public class playerArrowStatue : MonoBehaviour {
 		resultStr += "VICTORIES," + victories + ",";
 		resultStr += "SESSION_TIME," + session_time;
 		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
-		Debug.Log(resultStr);
+		//Debug.Log("Sending to Data Collector: " + resultStr);
 
 	}
 
@@ -420,11 +504,15 @@ public class playerArrowStatue : MonoBehaviour {
 		square = new Vector2(2,3);
 		predictedSquare = new Vector2(2,2);
 		direction = Vector3.up;
+		prevMoveDir = direction;
 		transform.rotation = Quaternion.Euler(up);
 
 		//Data collection variables
+		hintManager.reset();
 		moves = 0;
 		turns = 0;
+		pathTurns = 0;
+		avg_path_turns_per_move = -1f; // actual turns in path made divided by length of path
 		startTime = Time.time;
 		movementTime = 0f;
 		squares_explored_list = new List<string>();
@@ -456,6 +544,8 @@ public class playerArrowStatue : MonoBehaviour {
 
 		statueArrowBottom.reset ();
 		statueArrowTop.reset ();
+
+		pathTrace = coordinatesToSquare(square);
 
 		unDisplayOptions();
 	}
@@ -522,14 +612,61 @@ public class playerArrowStatue : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
+		longest_straight_path = getLongestStraightPath(); 
 		squares_explored = squares_explored_list.Count;
 		game_time = (Time.time - startTime);
 		num_traversed_squares_statues = statueArrowBottom.getNumTraversedSquares() 
 			+ statueArrowTop.getNumTraversedSquares();
 
+		float avg_time_per_move;
+		float avg_turns_per_move;
+		if(moves > 0) {
+			avg_time_per_move = movementTime/(1.0f * moves);
+			avg_turns_per_move = turns/(1.0f * moves);
+			avg_path_turns_per_move = pathTurns/(1.0f * moves);
+
+		} else {
+			avg_time_per_move = -1f;
+			avg_turns_per_move = -1f;
+			avg_path_turns_per_move = -1f; 
+		}
+
+		float left_right_symmetry;
+		float top_bottom_symmetry;
+		float statue_left_right_symmetry;
+		float statue_top_bottom_symmetry;
+		if(right_squares > 0) {
+			left_right_symmetry = left_squares/(1.0f * right_squares);
+		} else {
+			left_right_symmetry = -1f;
+		}
+		if(bottom_squares > 0) {
+			top_bottom_symmetry = top_squares/(1.0f * bottom_squares);
+		} else {
+			top_bottom_symmetry = -1f;
+		}
+
+		if(right_squares_statues > 0) {
+			statue_left_right_symmetry = left_squares_statues/(1.0f * right_squares_statues);
+		} else {
+			statue_left_right_symmetry = -1f;
+		}
+		if(bottom_squares > 0) {
+			statue_top_bottom_symmetry = top_squares_statues/(1.0f * bottom_squares_statues);
+		} else {
+			statue_top_bottom_symmetry = -1f;
+		}
+
 		/* PLAYER MOVEMENT DATA */
+
 		resultStr +="TOTAL_MOVES," + moves+",";
 		resultStr += "TURNS," + turns +",";
+		resultStr += "PATH_TURNS," + pathTurns + ",";
+		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
+		resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
+
+		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
+		resultStr += "AVG_TURNS_PER_MOVE," + avg_turns_per_move + ",";
 		resultStr +="TIME_SPENT_MOVING," + movementTime.ToString()+",";
 		resultStr +="NUM_SQUARES_TRAVERSED," + num_traversed_squares+",";
 		resultStr +="SQUARES_EXPLORED," + squares_explored_list.Count+",";
@@ -540,10 +677,12 @@ public class playerArrowStatue : MonoBehaviour {
 		resultStr += "RIGHT_SQUARES," + right_squares + ",";
 		resultStr += "TOP_SQUARES," + top_squares + ",";
 		resultStr += "BOTTOM_SQUARES," + bottom_squares + ",";
+		resultStr += "LEFT_RIGHT_SYMMETRY," + left_right_symmetry + ",";
+		resultStr += "TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry + ",";
 
 		/* COLLISION DATA */
-		resultStr +="PLAYER_STATUE_COLLIDE," + playerStatueCollide + ",";
-		resultStr +="PLAYER_BLOCKED_BY_STATUE," + playerBlockedByStatue + ",";
+		resultStr +="PLAYER_STATUE_COLLIDE," + playerStatueCollide + ","; // "error"
+		resultStr +="PLAYER_BLOCKED_BY_STATUE," + playerBlockedByStatue + ","; // "error"
 		resultStr +="STATUES_BLOCK_EACH_OTHER," + statuesBlockEachOther + ",";
 		resultStr +="STATUES_COLLIDE," + statuesCollide + ",";
 		resultStr +="STATUE_BLOCKED_BY_OFFSCREEN," + statueBlockedByOffscreen + ",";
@@ -557,13 +696,19 @@ public class playerArrowStatue : MonoBehaviour {
 		resultStr += "STATUE_RIGHT_SQUARES," + right_squares_statues + ",";
 		resultStr += "STATUE_TOP_SQUARES," + top_squares_statues + ",";
 		resultStr += "STATUE_BOTTOM_SQUARES," + bottom_squares_statues + ",";	
+		resultStr += "STATUE_LEFT_RIGHT_SYMMETRY," + statue_left_right_symmetry + ",";
+		resultStr += "STATUE_TOP_BOTTOM_SYMMETRY," + statue_top_bottom_symmetry + ",";
 
 		/* COMBINED MOVEMENT DATA */
 		resultStr +="ALL_MOVE," + all_move.ToString()+","; //redundant with collision vars?
 		resultStr +="TWO_MOVE," + two_move.ToString()+","; //redundant with collision vars?
 		resultStr +="ONE_MOVE," + player_only_moves.ToString()+","; //redundant with collision vars?
 
+		resultStr+="NUM_HINTS," + hintManager.getNumHints() + ",";
+		resultStr+="HINT_TYPE," + hintManager.getHintType() + ",";
+
 		resultStr +="TOTAL_TIME," + game_time + ",";
+		resultStr +="PATH_TRACE," + pathTrace + ",";
 
 	}
 
@@ -598,13 +743,13 @@ public class playerArrowStatue : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if(!victorious) {
+		if(!victorious && !isColliding) {
 			if(victory()) {
 				victories++;
 				logEndGameData ();
 				resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
-			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
+			} else if (controlsEnabled && Input.GetKeyDown (KeyCode.DownArrow)) {
 				if(approximately(direction, Vector3.down)) {
 					// move down
 					tryMove();
@@ -616,7 +761,7 @@ public class playerArrowStatue : MonoBehaviour {
 					statueArrowTop.turnUp ();
 				}
 
-			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
+			} else if (controlsEnabled && Input.GetKeyDown (KeyCode.UpArrow)) {
 				if(approximately(direction, Vector3.up)) {
 					// move up
 					tryMove();
@@ -626,7 +771,7 @@ public class playerArrowStatue : MonoBehaviour {
 					statueArrowBottom.turnUp ();
 					statueArrowTop.turnDown ();
 				}
-			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
+			} else if (controlsEnabled && Input.GetKeyDown (KeyCode.RightArrow)) {
 				if(approximately(direction, Vector3.right)) {
 					// move right
 					tryMove();
@@ -636,7 +781,7 @@ public class playerArrowStatue : MonoBehaviour {
 					statueArrowBottom.turnRight ();
 					statueArrowTop.turnLeft ();
 				}
-			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+			} else if (controlsEnabled && Input.GetKeyDown (KeyCode.LeftArrow)) {
 				if(approximately(direction, Vector3.left)) {
 					// move left
 					tryMove();
@@ -651,12 +796,22 @@ public class playerArrowStatue : MonoBehaviour {
 
 	}
 		
+	public void enableControls() {
+		controlsEnabled = true;
+	}
 
+	public void disableControls() {
+		controlsEnabled = false;
+	}
 
 	private void tryMove() {
 		logMoveData ();
 		bool[] errorsPlayer = getErrorType ();
 		if(!errorsPlayer[0] && !errorsPlayer[1] && !errorsPlayer[2]) {
+			if(!approximately(prevMoveDir, direction)) {
+				pathTurns++;
+				prevMoveDir = direction;
+			}
 			string newLoc = move ();
 			moves++;
 			countLeftRightSymmetry(newLoc);

@@ -19,15 +19,14 @@ public class postgameSurvey : MonoBehaviour {
 	
 	}
 
-	public void loadThankYouSurvey() {
+	public void loadHintsSurvey() {
 		// save how fun/easy/boring/frustrating answers to resultStr/database
 		updatePlayedBefore();
 		updateHowFun();
 		updateHowBoring();
 		updateHowEasy();
 		updateHowFrustrating();
-		data.save();
-		SceneManager.LoadScene("thankyou_screen");
+		SceneManager.LoadScene("postgame_survey_hints");
 
 	}
 

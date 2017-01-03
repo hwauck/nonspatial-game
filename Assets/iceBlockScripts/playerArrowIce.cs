@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,8 @@ public class playerArrowIce : MonoBehaviour {
 	public iceBlock[] ices;
 
 	private Vector3 direction;
+	private Vector3 prevMoveDir;
+
 	private Vector3 right;
 	private Vector3 left;
 	private Vector3 up;
@@ -35,9 +38,12 @@ public class playerArrowIce : MonoBehaviour {
 	private int pushes; 	//number of times player attempts to push an ice block
 	private int successfulPushes; // number of times player pushes ice block and it moves
 	private int turns;	//number of times player changes direction
+	private int pathTurns; //number of times player's path actually turns (pathTurns <= turns)
+	private int longest_straight_path;
 	private float avg_turns_per_move;
 	private float avg_turns_per_action;
 	private float avg_turns_per_push;
+	private float avg_path_turns_per_move;
 
 	/* ICE BLOCK "ERROR" DATA */
 	private int iceCantMove; 	// number of times player tries to push ice block but something is in the way
@@ -88,6 +94,8 @@ public class playerArrowIce : MonoBehaviour {
 	private IList<string> top_squares_list;
 	private IList<string> bottom_squares_list;
 
+	private string pathTrace;
+
 	//write to database
 	string resultStr;
 
@@ -104,6 +112,7 @@ public class playerArrowIce : MonoBehaviour {
 	void Start () {
 		resultStr = "NEW_GAME,ice,";
 		direction = Vector3.right;
+		prevMoveDir = direction;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
@@ -118,12 +127,15 @@ public class playerArrowIce : MonoBehaviour {
 		actions = 0;
 		moves = 0;
 		turns = 0;
+		pathTurns = 0;
+		longest_straight_path = 0;
 		pushes = 0;
 		successfulPushes = 0;
-		avg_time_per_move = 0f;
-		avg_turns_per_move = 0f;
-		avg_turns_per_action = 0f;
-		avg_turns_per_push = 0f;
+		avg_time_per_move = -1f;
+		avg_turns_per_move = -1f;
+		avg_turns_per_action = -1f;
+		avg_turns_per_push = -1f;
+		avg_path_turns_per_move = -1f;
 
 		iceCantMove = 0; 	
 		iceBlockedByIce = 0; 
@@ -154,6 +166,8 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice = 0; // because it will be calculated at end
 		num_repeated_squares_ice = 0; // because it will be calculated at end
 		num_traversed_squares_ice = 0; // because it will be calculated at end
+
+		pathTrace = coordinatesToSquare(square); //starting square
 
 		left_squares_list = new List<string>();
 		left_squares_list.Add ("11");
@@ -250,6 +264,60 @@ public class playerArrowIce : MonoBehaviour {
 		return direction;
 	}
 
+	// calculates the longest subsequence of this attempt's path trace without a turn
+	// and the avg straight path length for the entire path
+	private int getLongestStraightPath() {
+		string[] path = pathTrace.Split('-');
+		int curCol, curRow, nextCol, nextRow;
+		int currentColLength = 0;
+		int currentRowLength = 0;
+		int longestCol = 0;
+		int longestRow = 0;
+		for(int i = 0; i < path.Length - 1; i++) {
+			if (path[i].Length > 2) { // 3 digit column number
+				curCol = Convert.ToInt32(path[i].Substring(0,2));
+				curRow = Convert.ToInt32(path[i].Substring(2,1));
+			} else { // 2 digit column number (normal)
+				curCol = Convert.ToInt32(path[i].Substring(0,1));
+				curRow = Convert.ToInt32(path[i].Substring(1,1));
+			}
+			if (path[i+1].Length > 2) { // 3 digit column number
+				nextCol = Convert.ToInt32(path[i+1].Substring(0,2));
+				nextRow = Convert.ToInt32(path[i+1].Substring(2,1));
+			} else { // 2 digit column number (normal)
+				nextCol = Convert.ToInt32(path[i+1].Substring(0,1));
+				nextRow = Convert.ToInt32(path[i+1].Substring(1,1));
+			}
+
+			// update longest column so far
+			if(nextCol == curCol) {
+				currentColLength++;
+				if(currentColLength > longestCol) {
+					longestCol = currentColLength;
+				}
+			} else {
+				currentColLength = 1;
+			}
+
+			// update longest row so far
+			if(nextRow == curRow) {
+				currentRowLength++;
+				if(currentRowLength > longestRow) {
+					longestRow = currentRowLength;
+				}
+			} else {
+				currentRowLength = 1;
+			}
+		}
+
+		// set the longest path to the larger of the longest col and row
+		if(longestCol > longestRow) {
+			return longestCol;
+		} else {
+			return longestRow;
+		}
+	}
+
 	private void displayOptions() {
 		victoryPanel.enabled = true;
 		victoryText.enabled = true;
@@ -316,7 +384,9 @@ public class playerArrowIce : MonoBehaviour {
 		transform.Translate(direction * 2f, Space.World);
 		num_traversed_squares_player++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
-		//resultStr += predictedSquareName;
+
+		pathTrace += "-" + predictedSquareName;
+
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
 		if(!squares_explored_player_list.Contains(predictedSquareName)) {
@@ -416,19 +486,23 @@ public class playerArrowIce : MonoBehaviour {
 		square = new Vector2(5,2);
 		predictedSquare = new Vector2(5,3);
 		direction = Vector3.right;
+		prevMoveDir = direction;
 		transform.rotation = Quaternion.Euler(right);
 
 		//Data collection variables
 		actions = 0;
 		moves = 0;
 		turns = 0;
+		pathTurns = 0;
+		longest_straight_path = 0;
 		pushes = 0;
 		successfulPushes = 0;
-		avg_time_per_move = 0f;
+		avg_time_per_move = -1f;
 		startTime = Time.time;
-		avg_turns_per_move = 0f;
-		avg_turns_per_action = 0f;
-		avg_turns_per_push = 0f;
+		avg_turns_per_move = -1f;
+		avg_turns_per_action = -1f;
+		avg_turns_per_push = -1f;
+		avg_path_turns_per_move = -1f;
 
 		iceCantMove = 0; 	
 		iceBlockedByIce = 0; 
@@ -462,6 +536,8 @@ public class playerArrowIce : MonoBehaviour {
 		top_bottom_symmetry_player = -1f;
 		left_right_symmetry_ice = -1f;
 		top_bottom_symmetry_ice = -1f;
+
+		pathTrace = coordinatesToSquare(square);
 
 		foreach(iceBlock i in ices) {
 			i.reset(); 
@@ -534,6 +610,7 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
+		longest_straight_path = getLongestStraightPath(); //also calculates pathTurns value
 
 		if(turns == 0) {
 			avg_turns_per_action = -1f;
@@ -560,8 +637,10 @@ public class playerArrowIce : MonoBehaviour {
 		}
 		if(moves == 0) {
 			avg_time_per_move = -1f;
+			avg_path_turns_per_move = -1f;
 		} else {
 			avg_time_per_move = avg_time_per_move/moves;
+			avg_path_turns_per_move = pathTurns/(1.0f * moves);
 		}
 		float avg_push_success_rate;
 		if(pushes == 0) {
@@ -612,25 +691,26 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ACTIONS," + actions +","; //should be equal to moves + pushes
 		resultStr += "MOVES," + moves +",";
 		resultStr += "TURNS," + turns +",";
+		resultStr += "PATH_TURNS," + pathTurns + ",";
+		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
+	
 		resultStr += "PUSHES," + pushes +",";
 		resultStr += "SUCCESSFUL_PUSHES," + successfulPushes +",";
 		resultStr += "AVG_PUSH_SUCCESS_RATE," + avg_push_success_rate +",";
+		resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + ",";
+		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
+		resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + ",";
 		resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+","; 
 		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+",";
 		resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+",";
+		resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
 
 		/* ICE BLOCK DATA */
-		resultStr += "ICE_CANT_MOVE," + iceCantMove + ",";
+		resultStr += "ICE_CANT_MOVE," + iceCantMove + ","; // total "errors"
 		resultStr += "ICE_BLOCKED_BY_ICE," + iceBlockedByIce + ",";
 		resultStr += "ICE_BLOCKED_BY_OFFSCREEN," + iceBlockedByOffscreen + ",";
 		resultStr += "ICE_STOPPED_BY_ICE," + iceStoppedByIce + ",";
 		resultStr += "ICE_STOPPED_BY_OFFSCREEN," + iceStoppedByOffscreen + ",";
-
-		/* TIME DATA */
-		resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + ",";
-		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
-		resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + ",";
-		resultStr +="TOTAL_TIME," + game_time +",";
 
 		/* PLAYER LOCATION DATA */
 		resultStr += "PLAYER_SQUARES_TRAVERSED," + num_traversed_squares_player + ",";
@@ -654,7 +734,11 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ICE_TOP_SQUARES," + top_squares_ice + ",";
 		resultStr += "ICE_BOTTOM_SQUARES," + bottom_squares_ice + ",";
 		resultStr += "ICE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_ice + ",";
-		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";			
+		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";	
+
+		resultStr +="TOTAL_TIME," + game_time +",";
+		resultStr +="PATH_TRACE," + pathTrace + ",";
+
 	}
 
 	private void countLeftRightSymmetry(string newLoc) {
@@ -767,6 +851,11 @@ public class playerArrowIce : MonoBehaviour {
 		if(!errorsPlayer[0] && !errorsPlayer[1]) {
 			// player moves physically in the direction they are turned
 			logMoveData();
+			if(!approximately(prevMoveDir, direction)) {
+				pathTurns++;
+				Debug.Log("path turned! pathTurns = " + pathTurns);
+				prevMoveDir = direction;
+			}
 			string newLoc = move();
 			countLeftRightSymmetry(newLoc); // includes repetitions
 			countTopBottomSymmetry(newLoc); //includes repetitions
