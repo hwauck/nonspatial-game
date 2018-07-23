@@ -203,11 +203,11 @@ public class playerArrowTile : MonoBehaviour {
 
 		yes.GetComponent<Image>().enabled = true;
 		yes.interactable = true;
-		yes.transform.FindChild("YesText").GetComponent<Text>().enabled = true;
+		yes.transform.Find("YesText").GetComponent<Text>().enabled = true;
 
 		no.GetComponent<Image>().enabled = true;
 		no.interactable = true;
-		no.transform.FindChild("NoText").GetComponent<Text>().enabled = true;
+		no.transform.Find("NoText").GetComponent<Text>().enabled = true;
 
 	}
 
@@ -217,11 +217,11 @@ public class playerArrowTile : MonoBehaviour {
 
 		yes.GetComponent<Image>().enabled = false;
 		yes.interactable = false;
-		yes.transform.FindChild("YesText").GetComponent<Text>().enabled = false;
+		yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
 
 		no.GetComponent<Image>().enabled = false;
 		no.interactable = false;
-		no.transform.FindChild("NoText").GetComponent<Text>().enabled = false;
+		no.transform.Find("NoText").GetComponent<Text>().enabled = false;
 
 	}
 
