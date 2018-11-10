@@ -4,8 +4,8 @@ using System.Collections;
 
 public class iceBlock : MonoBehaviour {
 
-	private const int NUM_ROWS = 5;
-	private const int NUM_COLS = 7;
+	public int NUM_ROWS;
+	public int NUM_COLS;
 	public playerArrowIce player;
 	public iceBlock[] otherBlocks;
 	private Vector3 direction;
@@ -25,7 +25,7 @@ public class iceBlock : MonoBehaviour {
 	private int num_repeated_squares;
 	private int successfulPushes;
 	private int[,] squaresExplored; // each entry indicates how many times a square has been explored
-	private string[] movementSquares; // ice can only move on white squares
+	public string[] movementSquares; // ice can only move on white squares
 
 	// Use this for initialization
 	void Start () {
@@ -48,6 +48,8 @@ public class iceBlock : MonoBehaviour {
 			}
 		}
 		squaresExplored[(int)Math.Round(startingSquare.x) - 1,(int)Math.Round(startingSquare.y) - 1] = 1;
+		
+		/*
 		movementSquares = new string[15];
 		int i = 0;
 		for(int x = 2; x < 5; x++) {
@@ -56,6 +58,7 @@ public class iceBlock : MonoBehaviour {
 				i++;
 			}
 		}
+		*/
 	}
 
 	public int getIceCantMove() {
@@ -134,7 +137,7 @@ public class iceBlock : MonoBehaviour {
 	}
 
 	private bool blockedByIce() {
-		if(predictedSquare == otherBlocks[0].square || predictedSquare == otherBlocks[1].square) {
+		if(Array.Exists(otherBlocks, element => element.square == predictedSquare)) {
 			return true;
 		} else {
 			return false;
@@ -163,12 +166,27 @@ public class iceBlock : MonoBehaviour {
 		string newLoc = coordinatesToSquare(predictedSquare);
 		int x = Convert.ToInt32(newLoc.Substring(0,1));
 		int y = Convert.ToInt32(newLoc.Substring(1,1));
+		/*
 		int[,] otherBlock1SquaresExplored = otherBlocks[0].getSquaresExplored();
 		int[,] otherBlock2SquaresExplored = otherBlocks[1].getSquaresExplored();
+
 		if(squaresExplored[x-1,y-1] > 0 || otherBlock1SquaresExplored[x-1,y-1] > 0
 			|| otherBlock2SquaresExplored[x-1,y-1] > 0) {
 			num_repeated_squares++;
 		} 
+		*/
+
+		int[][,] otherBlockSquaresExplored = new int[otherBlocks.Length][,];
+		for (int i = 0; i < otherBlocks.Length; i++){
+			otherBlockSquaresExplored[i] = otherBlocks[i].getSquaresExplored();
+		}
+
+		for (int i = 0; i < otherBlocks.Length; i++){
+			if(squaresExplored[x-1, y-1] > 0 || otherBlockSquaresExplored[i][x-1, y-1] > 0){
+				num_repeated_squares++;
+			}
+		}
+
 		squaresExplored[x-1,y-1]++;
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 

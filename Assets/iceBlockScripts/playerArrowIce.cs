@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class playerArrowIce : MonoBehaviour {
-	private const int NUM_ROWS = 5;
-	private const int NUM_COLS = 7;
+	public int NUM_ROWS;
+	public int NUM_COLS;
 	public iceBlock[] ices;
+	public List<string> victorySquare;
+	private List<string> victorySquare_tmp;
+	public Vector3 startPosition;
 
 	private Vector3 direction;
 	private Vector3 prevMoveDir;
@@ -17,8 +20,10 @@ public class playerArrowIce : MonoBehaviour {
 	private Vector3 left;
 	private Vector3 up;
 	private Vector3 down;
-	private Vector2 square;
-	private Vector2 predictedSquare;
+	public Vector2 square;
+	private Vector2 square_store;
+	public Vector2 predictedSquare;
+	private Vector2 predictedSquare_store;
 	private bool victorious;
 
 	//UI for playing a new game
@@ -65,6 +70,7 @@ public class playerArrowIce : MonoBehaviour {
 	private float sessionStart_time;
 
 	/* PLAYER LOCATION DATA */
+	/*
 	private int left_squares_player;
 	private int right_squares_player;
 	private int top_squares_player;
@@ -74,9 +80,12 @@ public class playerArrowIce : MonoBehaviour {
 	private int squares_explored_player; // squares player has moved onto
 	private float left_right_symmetry_player;
 	private float top_bottom_symmetry_player;
-	private IList<string> squares_explored_player_list;
+	public List<string> squares_explored_player_list;
+	private List<string> squares_explored_player_list_store;
+	*/
 
 	/* ICE LOCATION DATA */
+	/*
 	private int left_squares_ice; //including repetitions
 	private int right_squares_ice; //including repetitions
 	private int top_squares_ice; //including repetitions
@@ -86,13 +95,17 @@ public class playerArrowIce : MonoBehaviour {
 	private int squares_explored_ice; // squares ice blocks have moved onto/across
 	private float left_right_symmetry_ice;
 	private float top_bottom_symmetry_ice;
-	private IList<string> squares_explored_ice_list;
+	public List<string> squares_explored_ice_list;
+	private List<string> squares_explored_ice_list_store;
+	*/
 
 	/* Keep track of which squares are in which area of board */
-	private IList<string> left_squares_list;
-	private IList<string> right_squares_list;
-	private IList<string> top_squares_list;
-	private IList<string> bottom_squares_list;
+	/*
+	public List<string> left_squares_list;
+	public List<string> right_squares_list;
+	public List<string> top_squares_list;
+	public List<string> bottom_squares_list;
+	*/
 
 	private string pathTrace;
 
@@ -117,8 +130,17 @@ public class playerArrowIce : MonoBehaviour {
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
 		down = new Vector3(0,0,180);
-		square = new Vector2(5,2);
-		predictedSquare = new Vector2(5,3); //player faces right to start
+		//square = new Vector2(5,2);
+		//predictedSquare = new Vector2(5,3); //player faces right to start
+
+		square_store = new Vector2(square.x, square.y);
+		predictedSquare_store = new Vector2(predictedSquare.x, predictedSquare.y);
+
+		victorySquare_tmp = new List<string>();
+
+		foreach(string s in victorySquare){
+			victorySquare_tmp.Add(s);
+		}
 
 		//Data collection variables
 		plays = 1;
@@ -143,6 +165,7 @@ public class playerArrowIce : MonoBehaviour {
 		iceStoppedByIce = 0; 
 		iceStoppedByOffscreen = 0; 
 
+		/*
 		squares_explored_player_list = new List<string>();
 		squares_explored_player_list.Add ("52");
 
@@ -150,6 +173,18 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice_list.Add ("22");
 		squares_explored_ice_list.Add ("42");
 		squares_explored_ice_list.Add ("26");
+		*/
+
+		/* 
+		squares_explored_player_list_store = new List<string>();
+		foreach(string s in squares_explored_player_list){
+			squares_explored_player_list_store.Add(s);
+		}
+
+		squares_explored_ice_list_store = new List<string>();
+		foreach(string s in squares_explored_ice_list){
+			squares_explored_ice_list_store.Add(s);
+		}
 
 		left_squares_player = 1;
 		right_squares_player = 0;
@@ -166,9 +201,11 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice = 0; // because it will be calculated at end
 		num_repeated_squares_ice = 0; // because it will be calculated at end
 		num_traversed_squares_ice = 0; // because it will be calculated at end
+		*/
 
 		pathTrace = coordinatesToSquare(square); //starting square
 
+		/*
 		left_squares_list = new List<string>();
 		left_squares_list.Add ("11");
 		left_squares_list.Add ("12");
@@ -235,10 +272,12 @@ public class playerArrowIce : MonoBehaviour {
 		top_squares_list.Add ("26");
 		top_squares_list.Add ("27");
 
+
 		left_right_symmetry_player = -1f;
 		top_bottom_symmetry_player = -1f;
 		left_right_symmetry_ice = -1f;
 		top_bottom_symmetry_ice = -1f;
+		*/
 	
 		//Victory UI variables
 		yes = GameObject.Find ("Yes").GetComponent<Button>();
@@ -248,13 +287,15 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
-	public IList<string> getSquaresPlayerExplored() {
+	/*
+	public List<string> getSquaresPlayerExplored() {
 		return squares_explored_player_list;
 	}
 
 	public int getNumSquaresPlayerExplored() {
 		return squares_explored_player_list.Count;
 	}
+	*/
 
 	public int getNumMoves() {
 		return moves;
@@ -382,18 +423,20 @@ public class playerArrowIce : MonoBehaviour {
 
 	public string move() {
 		transform.Translate(direction * 2f, Space.World);
-		num_traversed_squares_player++;
+		//num_traversed_squares_player++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
 
 		pathTrace += "-" + predictedSquareName;
 
 		Vector3 oldSquare = square; 
 		square = predictedSquare; 
+		/*
 		if(!squares_explored_player_list.Contains(predictedSquareName)) {
 			squares_explored_player_list.Add(predictedSquareName);
 		} else {
 			num_repeated_squares_player++;
 		}
+		*/
 		predictedSquare.x = 2f * square.x - oldSquare.x; 
 		predictedSquare.y = 2f * square.y - oldSquare.y; 
 		return predictedSquareName;
@@ -482,9 +525,12 @@ public class playerArrowIce : MonoBehaviour {
 		if(victorious) {
 			victorious = false;
 		}
-		transform.position = new Vector3(-4.5f,-4,0);
-		square = new Vector2(5,2);
-		predictedSquare = new Vector2(5,3);
+		//transform.position = new Vector3(-4.5f,-4,0);
+		//square = new Vector2(5,2);
+		//predictedSquare = new Vector2(5,3);
+		transform.position = startPosition;
+		square = new Vector2(square_store.x, square_store.y);
+		predictedSquare = new Vector2(predictedSquare_store.x, predictedSquare_store.y);
 		direction = Vector3.right;
 		prevMoveDir = direction;
 		transform.rotation = Quaternion.Euler(right);
@@ -510,6 +556,7 @@ public class playerArrowIce : MonoBehaviour {
 		iceStoppedByIce = 0; 
 		iceStoppedByOffscreen = 0; 
 
+		/*
 		squares_explored_player_list = new List<string>();
 		squares_explored_player_list.Add ("52");
 
@@ -517,6 +564,19 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice_list.Add ("22");
 		squares_explored_ice_list.Add ("42");
 		squares_explored_ice_list.Add ("26");
+		*/
+
+		/* 
+		squares_explored_player_list = new List<string>();
+		foreach(string s in squares_explored_player_list_store){
+			squares_explored_player_list.Add(s);
+		}
+
+		squares_explored_ice_list = new List<string>();
+		foreach(string s in squares_explored_ice_list_store){
+			squares_explored_ice_list.Add(s);
+		}
+
 
 		left_squares_player = 1;
 		right_squares_player = 0;
@@ -537,6 +597,8 @@ public class playerArrowIce : MonoBehaviour {
 		left_right_symmetry_ice = -1f;
 		top_bottom_symmetry_ice = -1f;
 
+		*/
+
 		pathTrace = coordinatesToSquare(square);
 
 		foreach(iceBlock i in ices) {
@@ -548,13 +610,30 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	private bool victory() {
-		foreach(iceBlock i in ices) {
-			if(coordinatesToSquare(i.square).Equals ("34")) {
-				victorious = true;
-				return true;
-			} 
+
+		foreach(string s in victorySquare_tmp){
+			foreach(iceBlock i in ices){
+				if(coordinatesToSquare(i.square).Equals (s)){
+					victorySquare.Remove(s);
+				}
+			}
 		}
-		return false;
+
+		if(victorySquare.Count == 0){
+			victorious = true;
+			victorySquare.Clear();
+			foreach(string s in victorySquare_tmp){
+				victorySquare.Add(s);
+			}
+			return true;
+		}else{
+			victorySquare.Clear();
+			foreach(string s in victorySquare_tmp){
+				victorySquare.Add(s);
+			}
+			return false;
+		}
+
 	}
 
 	// add square to count only once
@@ -562,13 +641,26 @@ public class playerArrowIce : MonoBehaviour {
 	private int iceNumSquaresExplored() {
 
 		//create the union array to count each square only once
+		/*
 		int[,] ice1Squares = ices[0].getSquaresExplored();
 		int[,] ice2Squares = ices[1].getSquaresExplored();
 		int[,] ice3Squares = ices[2].getSquaresExplored();
+		*/
+
+		int[][,] iceSquares = new int[ices.Length][,];
+		for(int i = 0; i < ices.Length; i++){
+			iceSquares[i] = ices[i].getSquaresExplored();
+		}
+
 		int[,] union = new int[NUM_ROWS,NUM_COLS];
 		for(int row = 0; row < NUM_ROWS; row++) {
 			for(int col = 0; col < NUM_COLS; col++) {
-				union[row,col] = ice1Squares[row,col] + ice2Squares[row,col] + ice3Squares[row,col];
+				//union[row,col] = ice1Squares[row,col] + ice2Squares[row,col] + ice3Squares[row,col];
+
+				for(int i = 0; i < iceSquares.Length; i++){
+					union[row, col] += iceSquares[i][row,col];
+				}
+
 				if(union[row,col] > 0) {
 					union[row,col] = 1;
 				}
@@ -652,6 +744,7 @@ public class playerArrowIce : MonoBehaviour {
 		}
 		game_time = (Time.time - startTime);
 
+		/*
 		squares_explored_player = getNumSquaresPlayerExplored(); // squares player has moved onto
 
 		if(right_squares_player == 0) {
@@ -686,6 +779,7 @@ public class playerArrowIce : MonoBehaviour {
 		} else {
 			top_bottom_symmetry_ice = top_squares_ice / (1.0f * bottom_squares_ice);
 		}
+		*/
 
 		/* MOVEMENT DATA */
 		resultStr += "ACTIONS," + actions +","; //should be equal to moves + pushes
@@ -713,6 +807,7 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ICE_STOPPED_BY_OFFSCREEN," + iceStoppedByOffscreen + ",";
 
 		/* PLAYER LOCATION DATA */
+		/*
 		resultStr += "PLAYER_SQUARES_TRAVERSED," + num_traversed_squares_player + ",";
 		resultStr += "PLAYER_SQUARES_EXPLORED," + squares_explored_player + ",";
 		resultStr += "PLAYER_SQUARES_REPEATED," + num_repeated_squares_player + ",";
@@ -723,8 +818,10 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "PLAYER_BOTTOM_SQUARES," + bottom_squares_player + ",";
 		resultStr += "PLAYER_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_player + ",";
 		resultStr += "PLAYER_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_player + ",";
+		*/
 
 		/* ICE LOCATION DATA */
+		/*
 		resultStr += "ICE_SQUARES_TRAVERSED," + num_traversed_squares_ice + ",";
 		resultStr += "ICE_SQUARES_EXPLORED," + squares_explored_ice + ",";
 		resultStr += "ICE_SQUARES_REPEATED," + num_repeated_squares_ice + ",";
@@ -735,12 +832,14 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ICE_BOTTOM_SQUARES," + bottom_squares_ice + ",";
 		resultStr += "ICE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_ice + ",";
 		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";	
+		*/
 
 		resultStr +="TOTAL_TIME," + game_time +",";
 		resultStr +="PATH_TRACE," + pathTrace + ",";
 
 	}
 
+	/*
 	private void countLeftRightSymmetry(string newLoc) {
 		if(left_squares_list.Contains (newLoc)) {
 			left_squares_player++;
@@ -780,6 +879,7 @@ public class playerArrowIce : MonoBehaviour {
 		}
 
 	}
+	*/
 
 
 		
@@ -857,8 +957,10 @@ public class playerArrowIce : MonoBehaviour {
 				prevMoveDir = direction;
 			}
 			string newLoc = move();
+			/* 
 			countLeftRightSymmetry(newLoc); // includes repetitions
 			countTopBottomSymmetry(newLoc); //includes repetitions
+			*/
 
 		} else if(errorsPlayer[1]) {
 			//Player blocked by ice, move ice if possible
