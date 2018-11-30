@@ -43,10 +43,10 @@ public class playerStartRoom : MonoBehaviour {
 		else if(this.transform.position.x==5.5&&this.transform.position.y==-8) SceneManager.LoadScene("ice_3");
 		else if(this.transform.position.x==11.5&&this.transform.position.y==-4) SceneManager.LoadScene("ice_4");
 		else if(this.transform.position.x==11.5&&this.transform.position.y==2) SceneManager.LoadScene("ice_5");
-		// else if()
-		// else if()
-		// else if()
-		// else if()
+		else if(this.transform.position.x==-6.5&&this.transform.position.y==-4) SceneManager.LoadScene("tile");
+		else if(this.transform.position.x==-6.5&&this.transform.position.y==2) SceneManager.LoadScene("tile2");
+		else if(this.transform.position.x==-0.5&&this.transform.position.y==6) SceneManager.LoadScene("tile3");
+		else if(this.transform.position.x==5.5&&this.transform.position.y==6) SceneManager.LoadScene("tileHard");
 
 	}
 }
