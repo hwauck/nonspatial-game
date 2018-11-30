@@ -15,13 +15,25 @@ public class playerStartRoom : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.DownArrow)) {
-			if(this.transform.position.y>-6) transform.position = new Vector3(transform.position.x, transform.position.y-2, transform.position.z);
+			if(this.transform.position.y==-6){
+				if(this.transform.position.x==-2.5||this.transform.position.x==1.5||this.transform.position.x==5.5) transform.position = new Vector3(transform.position.x, transform.position.y-2, transform.position.z);
+			}
+			else if(this.transform.position.y>-6&&this.transform.position.x!=-6.5&&this.transform.position.x!=11.5) transform.position = new Vector3(transform.position.x, transform.position.y-2, transform.position.z);
 		} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-			if(this.transform.position.y<4) transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
+			if(this.transform.position.y==4){
+				if(this.transform.position.x==-0.5||this.transform.position.x==5.5) transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
+			}
+			else if(this.transform.position.y<4&&this.transform.position.x!=-6.5&&this.transform.position.x!=11.5) transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
 		} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-			if(this.transform.position.x<9.5) transform.position = new Vector3(transform.position.x+2, transform.position.y, transform.position.z);
+			if(this.transform.position.x==9.5){
+				if(this.transform.position.y==2||this.transform.position.y==-4) transform.position = new Vector3(transform.position.x+2, transform.position.y, transform.position.z);
+			}
+			else if(this.transform.position.x<9.5&&this.transform.position.y!=-8&&this.transform.position.y!=6) transform.position = new Vector3(transform.position.x+2, transform.position.y, transform.position.z);
 		} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-			if(this.transform.position.x>-4.5) transform.position = new Vector3(transform.position.x-2, transform.position.y, transform.position.z);
+			if(this.transform.position.x==-4.5){
+				if(this.transform.position.y==2||this.transform.position.y==-4) transform.position = new Vector3(transform.position.x-2, transform.position.y, transform.position.z);
+			}
+			else if(this.transform.position.x>-4.5&&this.transform.position.y!=-8&&this.transform.position.y!=6) transform.position = new Vector3(transform.position.x-2, transform.position.y, transform.position.z);
 		}
 
 
