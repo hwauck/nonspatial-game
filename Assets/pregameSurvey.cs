@@ -24,7 +24,8 @@ public class pregameSurvey : MonoBehaviour {
 		updateGameExp();
 		updateGamesPlayed();
 		//SceneManager.LoadScene("puzzleHints");
-		SceneManager.LoadScene("ice_2");
+		//SceneManager.LoadScene("ice_2");
+		SceneManager.LoadScene("tile");
 
 	}
 

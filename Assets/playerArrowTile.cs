@@ -78,7 +78,7 @@ public class playerArrowTile : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		resultStr = "NEW_GAME,tile,";
+		//resultStr = "NEW_GAME,tile,";
 		boardSquares[PLAYER_START_INDEX].GetComponent<SpriteRenderer>().color = Color.yellow;
 		direction = Vector3.up;
 		right = new Vector3(0,0,270);
@@ -290,7 +290,7 @@ public class playerArrowTile : MonoBehaviour {
 	public void newGame() {
 		plays++;
 		reset();
-		resultStr += "NEW_GAME,tile,";
+		//resultStr += "NEW_GAME,tile,";
 	}
 
 	// when the "Reset" button is clicked
@@ -299,14 +299,14 @@ public class playerArrowTile : MonoBehaviour {
 		resets++;
 		logEndGameData();
 		reset();
-		resultStr += "OUTCOME,RESET,NEW_ATTEMPT,tile,";
+		//resultStr += "OUTCOME,RESET,NEW_ATTEMPT,tile,";
 	}
 
 	// only when "I'm done playing" button is clicked
 	// (end game data has not yet been logged)
 	public void buttonQuit() {
 		logEndGameData();
-		resultStr += "OUTCOME,QUIT,END_SESSION,done,";
+		//resultStr += "OUTCOME,QUIT,END_SESSION,done,";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -314,7 +314,7 @@ public class playerArrowTile : MonoBehaviour {
 	// only when "Play Again? No" button is clicked
 	// (end game data has already been logged)
 	public void saveAndQuit() {
-		resultStr += "END_SESSION,no,";
+		//resultStr += "END_SESSION,no,";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -322,9 +322,9 @@ public class playerArrowTile : MonoBehaviour {
 	private void SendSaveResult()
 	{
 		session_time = Time.time - sessionStart_time;
-		resultStr += "ATTEMPTS," + plays + ",";
+		//resultStr += "ATTEMPTS," + plays + ",";
 		resultStr += "RESETS," + resets + ",";
-		resultStr += "VICTORIES," + victories + ",";
+		//resultStr += "VICTORIES," + victories + ",";
 		resultStr += "SESSION_TIME," + session_time;
 		Debug.Log(resultStr);
 
@@ -500,22 +500,22 @@ public class playerArrowTile : MonoBehaviour {
 
 
 		resultStr +="TOTAL_MOVES," + moves+",";
-		resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+",";
+		//resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+",";
 
-		resultStr +="SQUARES_EXPLORED," + num_squares_explored+",";
-		resultStr += "LEFT_SQUARES," + left_squares + ",";
-		resultStr += "RIGHT_SQUARES," + right_squares + ",";
-		resultStr += "TOP_SQUARES," + top_squares + ",";
-		resultStr += "BOTTOM_SQUARES," + bottom_squares + ",";
-		resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +",";
-		resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +",";
+		//resultStr +="SQUARES_EXPLORED," + num_squares_explored+",";
+		//resultStr += "LEFT_SQUARES," + left_squares + ",";
+		//resultStr += "RIGHT_SQUARES," + right_squares + ",";
+		//resultStr += "TOP_SQUARES," + top_squares + ",";
+		//resultStr += "BOTTOM_SQUARES," + bottom_squares + ",";
+		//resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +",";
+		//resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +",";
 
-		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
-		resultStr +="PATH_TURNS," + pathTurns + ",";
-		resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
+		//resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
+		//resultStr +="PATH_TURNS," + pathTurns + ",";
+		//resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
 
-		resultStr +="TOTAL_TIME," + game_time + ",";
-		resultStr +="PATH_TRACE," + pathTrace + ",";
+		//resultStr +="TOTAL_TIME," + game_time + ",";
+		//resultStr +="PATH_TRACE," + pathTrace + ",";
 
 	}
 
@@ -542,7 +542,7 @@ public class playerArrowTile : MonoBehaviour {
 			if(victory()) {
 				victories++;
 				logEndGameData ();
-				resultStr +="OUTCOME,VICTORY,";
+				//resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				bool turned = turnDown ();
