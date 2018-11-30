@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class playerArrowIce : MonoBehaviour {
+	
+	public GameObject timer;
 	public int NUM_ROWS;
 	public int NUM_COLS;
 	public iceBlock[] ices;
 	public List<string> victorySquare;
 	private List<string> victorySquare_tmp;
 	public Vector3 startPosition;
+	private bool timedOut = false;
 
 	private Vector3 direction;
 	private Vector3 prevMoveDir;
@@ -370,6 +373,10 @@ public class playerArrowIce : MonoBehaviour {
 		no.GetComponent<Image>().enabled = true;
 		no.interactable = true;
 		no.transform.Find("NoText").GetComponent<Text>().enabled = true;
+
+		if(timer != null){
+			timer.GetComponent<Timer>().SetVictory();
+		}
 	}
 
 	private void unDisplayOptions() {
@@ -480,6 +487,9 @@ public class playerArrowIce : MonoBehaviour {
 	public void newGame() {
 		plays++;
 		reset();
+		if(timer != null){
+			timer.GetComponent<Timer>().ResetTimer();
+		}
 		//resultStr += "NEW_GAME,ice,";
 	}
 
@@ -895,40 +905,48 @@ public class playerArrowIce : MonoBehaviour {
 				victories++;
 				displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
-				if(approximately(direction, Vector3.down)) {
-					// move down
-					tryMove();
-				} else {
-					// turn down
-					turns++;
-					turnDown ();
+				if(!timedOut) {
+					if(approximately(direction, Vector3.down)) {
+						// move down
+						tryMove();
+					} else {
+						// turn down
+						turns++;
+						turnDown ();
+					}
 				}
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-				if(approximately(direction, Vector3.up)) {
-					// move up
-					tryMove();
-				} else {
-					// turn up
-					turns++;
-					turnUp ();
+				if(!timedOut){
+					if(approximately(direction, Vector3.up)) {
+						// move up
+						tryMove();
+					} else {
+						// turn up
+						turns++;
+						turnUp ();
+					}
 				}
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				if(approximately(direction, Vector3.right)) {
-					// move right
-					tryMove();
-				} else {
-					// turn right
-					turns++;				
-					turnRight ();
+				if(!timedOut){
+					if(approximately(direction, Vector3.right)) {
+						// move right
+						tryMove();
+					} else {
+						// turn right
+						turns++;				
+						turnRight ();
+					}
 				}
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-				if(approximately(direction, Vector3.left)) {
-					// move left
-					tryMove();
-				} else {
-					// turn left
-					turns++;
-					turnLeft ();
+				if(!timedOut){
+					if(approximately(direction, Vector3.left)) {
+						// move left
+						tryMove();
+					} else {
+						// turn left
+						turns++;
+						turnLeft ();
+					}
 				}
 			} 
 		}
@@ -976,5 +994,9 @@ public class playerArrowIce : MonoBehaviour {
 			}
 
 		} 
+	}
+
+	public void SetTimedOut (bool timedOut) {
+		this.timedOut = timedOut;
 	}
 }
