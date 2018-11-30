@@ -123,7 +123,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		resultStr = "NEW_GAME,ice,";
+		//resultStr = "NEW_GAME,ice,";
 		direction = Vector3.right;
 		prevMoveDir = direction;
 		right = new Vector3(0,0,270);
@@ -480,7 +480,7 @@ public class playerArrowIce : MonoBehaviour {
 	public void newGame() {
 		plays++;
 		reset();
-		resultStr += "NEW_GAME,ice,";
+		//resultStr += "NEW_GAME,ice,";
 	}
 
 	// when the "Reset" button is clicked
@@ -489,14 +489,14 @@ public class playerArrowIce : MonoBehaviour {
 		plays++;
 		logEndGameData();
 		reset();
-		resultStr += "OUTCOME,RESET,NEW_ATTEMPT,ice,";
+		//resultStr += "OUTCOME,RESET,NEW_ATTEMPT,ice,";
 	}
 
 	// only when "I'm done playing" button is clicked
 	// (end game data has not yet been logged)
 	public void buttonQuit() {
 		logEndGameData();
-		resultStr += "OUTCOME,QUIT,END_SESSION,done,";
+		//resultStr += "OUTCOME,QUIT,END_SESSION,done,";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -504,7 +504,7 @@ public class playerArrowIce : MonoBehaviour {
 	// only when "Play Again? No" button is clicked
 	// (end game data has already been logged)
 	public void saveAndQuit() {
-		resultStr += "END_SESSION,no,";
+		//resultStr += "END_SESSION,no,";
 		SendSaveResult();
 		SceneManager.LoadScene("postgame_survey");
 	}
@@ -512,12 +512,15 @@ public class playerArrowIce : MonoBehaviour {
 	private void SendSaveResult()
 	{
 		session_time = Time.time - sessionStart_time;
-		resultStr += "ATTEMPTS," + plays + ",";
+		//resultStr += "ATTEMPTS," + plays + ",";
 		resultStr += "RESETS," + resets + ",";
-		resultStr += "VICTORIES," + victories + ",";
+		//resultStr += "VICTORIES," + victories + ",";
 		resultStr += "SESSION_TIME," + session_time;
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
-		Debug.Log(resultStr);
+		GameObject dc = GameObject.Find("DataCollector");
+		if(dc != null){
+			GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		}
+		Debug.Log("resultStr = " + resultStr);
 
 	}
 
@@ -782,27 +785,27 @@ public class playerArrowIce : MonoBehaviour {
 		*/
 
 		/* MOVEMENT DATA */
-		resultStr += "ACTIONS," + actions +","; //should be equal to moves + pushes
+		//resultStr += "ACTIONS," + actions +","; //should be equal to moves + pushes
 		resultStr += "MOVES," + moves +",";
 		resultStr += "TURNS," + turns +",";
-		resultStr += "PATH_TURNS," + pathTurns + ",";
-		resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
+		//resultStr += "PATH_TURNS," + pathTurns + ",";
+		//resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
 	
 		resultStr += "PUSHES," + pushes +",";
-		resultStr += "SUCCESSFUL_PUSHES," + successfulPushes +",";
-		resultStr += "AVG_PUSH_SUCCESS_RATE," + avg_push_success_rate +",";
-		resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + ",";
-		resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
-		resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + ",";
-		resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+","; 
-		resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+",";
-		resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+",";
-		resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
+		//resultStr += "SUCCESSFUL_PUSHES," + successfulPushes +",";
+		//resultStr += "AVG_PUSH_SUCCESS_RATE," + avg_push_success_rate +",";
+		//resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + ",";
+		//resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
+		//resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + ",";
+		//resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+","; 
+		//resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+",";
+		//resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+",";
+		//resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
 
 		/* ICE BLOCK DATA */
-		resultStr += "ICE_CANT_MOVE," + iceCantMove + ","; // total "errors"
-		resultStr += "ICE_BLOCKED_BY_ICE," + iceBlockedByIce + ",";
-		resultStr += "ICE_BLOCKED_BY_OFFSCREEN," + iceBlockedByOffscreen + ",";
+		//resultStr += "ICE_CANT_MOVE," + iceCantMove + ","; // total "errors"
+		//resultStr += "ICE_BLOCKED_BY_ICE," + iceBlockedByIce + ",";
+		//resultStr += "ICE_BLOCKED_BY_OFFSCREEN," + iceBlockedByOffscreen + ",";
 		resultStr += "ICE_STOPPED_BY_ICE," + iceStoppedByIce + ",";
 		resultStr += "ICE_STOPPED_BY_OFFSCREEN," + iceStoppedByOffscreen + ",";
 
@@ -834,8 +837,8 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";	
 		*/
 
-		resultStr +="TOTAL_TIME," + game_time +",";
-		resultStr +="PATH_TRACE," + pathTrace + ",";
+		//resultStr +="TOTAL_TIME," + game_time +",";
+		//resultStr +="PATH_TRACE," + pathTrace + ",";
 
 	}
 
@@ -888,7 +891,7 @@ public class playerArrowIce : MonoBehaviour {
 		if(!victorious) {
 			if(victory()) {
 				logEndGameData ();
-				resultStr +="OUTCOME,VICTORY,";
+				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
 				displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
