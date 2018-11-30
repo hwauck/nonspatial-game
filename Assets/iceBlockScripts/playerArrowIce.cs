@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class playerArrowIce : MonoBehaviour {
-	
+
 	public GameObject timer;
 	public int NUM_ROWS;
 	public int NUM_COLS;
@@ -162,11 +162,11 @@ public class playerArrowIce : MonoBehaviour {
 		avg_turns_per_push = -1f;
 		avg_path_turns_per_move = -1f;
 
-		iceCantMove = 0; 	
-		iceBlockedByIce = 0; 
-		iceBlockedByOffscreen = 0; 
-		iceStoppedByIce = 0; 
-		iceStoppedByOffscreen = 0; 
+		iceCantMove = 0;
+		iceBlockedByIce = 0;
+		iceBlockedByOffscreen = 0;
+		iceStoppedByIce = 0;
+		iceStoppedByOffscreen = 0;
 
 		/*
 		squares_explored_player_list = new List<string>();
@@ -178,7 +178,7 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice_list.Add ("26");
 		*/
 
-		/* 
+		/*
 		squares_explored_player_list_store = new List<string>();
 		foreach(string s in squares_explored_player_list){
 			squares_explored_player_list_store.Add(s);
@@ -281,7 +281,7 @@ public class playerArrowIce : MonoBehaviour {
 		left_right_symmetry_ice = -1f;
 		top_bottom_symmetry_ice = -1f;
 		*/
-	
+
 		//Victory UI variables
 		yes = GameObject.Find ("Yes").GetComponent<Button>();
 		no = GameObject.Find ("No").GetComponent<Button>();
@@ -413,7 +413,7 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	// index 0 is 1 if player blocked by offscreen
-	// index 1 is 1 if player blocked by ice 
+	// index 1 is 1 if player blocked by ice
 	public bool[] getErrorType() {
 		bool[] errors = new bool[2];
 		for(int i = 0; i < 2; i++) {
@@ -424,7 +424,7 @@ public class playerArrowIce : MonoBehaviour {
 
 		} else if (blockedByIce()) {
 			errors[1] = true;
-		} 
+		}
 		return errors;
 	}
 
@@ -435,8 +435,8 @@ public class playerArrowIce : MonoBehaviour {
 
 		pathTrace += "-" + predictedSquareName;
 
-		Vector3 oldSquare = square; 
-		square = predictedSquare; 
+		Vector3 oldSquare = square;
+		square = predictedSquare;
 		/*
 		if(!squares_explored_player_list.Contains(predictedSquareName)) {
 			squares_explored_player_list.Add(predictedSquareName);
@@ -444,8 +444,8 @@ public class playerArrowIce : MonoBehaviour {
 			num_repeated_squares_player++;
 		}
 		*/
-		predictedSquare.x = 2f * square.x - oldSquare.x; 
-		predictedSquare.y = 2f * square.y - oldSquare.y; 
+		predictedSquare.x = 2f * square.x - oldSquare.x;
+		predictedSquare.y = 2f * square.y - oldSquare.y;
 		return predictedSquareName;
 
 	}
@@ -515,8 +515,10 @@ public class playerArrowIce : MonoBehaviour {
 	// (end game data has already been logged)
 	public void saveAndQuit() {
 		//resultStr += "END_SESSION,no,";
-		SendSaveResult();
-		SceneManager.LoadScene("postgame_survey");
+		//TODO: change this part later for test purpose
+		// SendSaveResult();
+		// SceneManager.LoadScene("postgame_survey");
+		SceneManager.LoadScene("start room");
 	}
 
 	private void SendSaveResult()
@@ -563,11 +565,11 @@ public class playerArrowIce : MonoBehaviour {
 		avg_turns_per_push = -1f;
 		avg_path_turns_per_move = -1f;
 
-		iceCantMove = 0; 	
-		iceBlockedByIce = 0; 
-		iceBlockedByOffscreen = 0; 
-		iceStoppedByIce = 0; 
-		iceStoppedByOffscreen = 0; 
+		iceCantMove = 0;
+		iceBlockedByIce = 0;
+		iceBlockedByOffscreen = 0;
+		iceStoppedByIce = 0;
+		iceStoppedByOffscreen = 0;
 
 		/*
 		squares_explored_player_list = new List<string>();
@@ -579,7 +581,7 @@ public class playerArrowIce : MonoBehaviour {
 		squares_explored_ice_list.Add ("26");
 		*/
 
-		/* 
+		/*
 		squares_explored_player_list = new List<string>();
 		foreach(string s in squares_explored_player_list_store){
 			squares_explored_player_list.Add(s);
@@ -615,7 +617,7 @@ public class playerArrowIce : MonoBehaviour {
 		pathTrace = coordinatesToSquare(square);
 
 		foreach(iceBlock i in ices) {
-			i.reset(); 
+			i.reset();
 		}
 
 		unDisplayOptions();
@@ -726,7 +728,7 @@ public class playerArrowIce : MonoBehaviour {
 			avg_turns_per_move = moves / (1.0f * turns);
 			avg_turns_per_push = pushes / (1.0f * turns);
 		}
-	
+
 		foreach(iceBlock i in ices) {
 			iceCantMove += i.getIceCantMove();
 			iceBlockedByIce += i.getIceBlockedByIce();
@@ -800,14 +802,14 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "TURNS," + turns +",";
 		//resultStr += "PATH_TURNS," + pathTurns + ",";
 		//resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
-	
+
 		resultStr += "PUSHES," + pushes +",";
 		//resultStr += "SUCCESSFUL_PUSHES," + successfulPushes +",";
 		//resultStr += "AVG_PUSH_SUCCESS_RATE," + avg_push_success_rate +",";
 		//resultStr += "AVG_TIME_PER_ACTION," + avg_time_per_action + ",";
 		//resultStr += "AVG_TIME_PER_MOVE," + avg_time_per_move + ",";
 		//resultStr += "AVG_TIME_PER_PUSH," + avg_time_per_push + ",";
-		//resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+","; 
+		//resultStr +="AVG_TURNS_PER_ACTION," + avg_turns_per_action+",";
 		//resultStr +="AVG_TURNS_PER_MOVE," + avg_turns_per_move+",";
 		//resultStr +="AVG_TURNS_PER_PUSH," + avg_turns_per_push+",";
 		//resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
@@ -844,7 +846,7 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "ICE_TOP_SQUARES," + top_squares_ice + ",";
 		resultStr += "ICE_BOTTOM_SQUARES," + bottom_squares_ice + ",";
 		resultStr += "ICE_LEFT_RIGHT_SYMMETRY," + left_right_symmetry_ice + ",";
-		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";	
+		resultStr += "ICE_TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry_ice + ",";
 		*/
 
 		//resultStr +="TOTAL_TIME," + game_time +",";
@@ -895,7 +897,7 @@ public class playerArrowIce : MonoBehaviour {
 	*/
 
 
-		
+
 	// Update is called once per frame
 	void Update () {
 		if(!victorious) {
@@ -933,7 +935,7 @@ public class playerArrowIce : MonoBehaviour {
 						tryMove();
 					} else {
 						// turn right
-						turns++;				
+						turns++;
 						turnRight ();
 					}
 				}
@@ -948,7 +950,7 @@ public class playerArrowIce : MonoBehaviour {
 						turnLeft ();
 					}
 				}
-			} 
+			}
 		}
 
 	}
@@ -978,7 +980,7 @@ public class playerArrowIce : MonoBehaviour {
 				prevMoveDir = direction;
 			}
 			string newLoc = move();
-			/* 
+			/*
 			countLeftRightSymmetry(newLoc); // includes repetitions
 			countTopBottomSymmetry(newLoc); //includes repetitions
 			*/
@@ -993,7 +995,7 @@ public class playerArrowIce : MonoBehaviour {
 
 			}
 
-		} 
+		}
 	}
 
 	public void SetTimedOut (bool timedOut) {

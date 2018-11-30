@@ -37,20 +37,20 @@ public class playerArrowTile : MonoBehaviour {
 	private int plays;
 	private int victories; // don't reset
 	private int resets; // don't reset
-	private int moves; 
+	private int moves;
 	private float startTime;
 	private float prevMoveEndTime;
-	private float game_time; 
+	private float game_time;
 	private float session_time; // time spent in all games combined
 	private float sessionStart_time;
 
 	/* use these  to figure out which quadrant player tries first */
-	public int left_squares; 
-	public int right_squares; 
-	public int top_squares; 
-	public int bottom_squares; 
+	public int left_squares;
+	public int right_squares;
+	public int top_squares;
+	public int bottom_squares;
 
-	private int num_squares_explored; 
+	private int num_squares_explored;
 	private float avg_time_per_move; // how long player takes to make one move, on average
 	private bool[,] squares_explored;
 	private float left_right_symmetry;
@@ -75,7 +75,7 @@ public class playerArrowTile : MonoBehaviour {
 
 	}
 
-	
+
 	// Use this for initialization
 	void Start () {
 		//resultStr = "NEW_GAME,tile,";
@@ -140,7 +140,7 @@ public class playerArrowTile : MonoBehaviour {
 		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
 
-	
+
 	}
 
 	// calculates the longest subsequence of this attempt's path trace without a turn
@@ -254,7 +254,7 @@ public class playerArrowTile : MonoBehaviour {
 		} else if (blockedByObstacle()){
 			Debug.Log("Can't Move: Blocked by Obstacle at " + coordinatesToSquare(predictedSquare));
 
-		} 
+		}
 		return !offScreen() && !blockedByObstacle();
 	}
 
@@ -263,8 +263,8 @@ public class playerArrowTile : MonoBehaviour {
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
 		GameObject.Find("block" + predictedSquareName).GetComponent<SpriteRenderer>().color = Color.yellow;
 		//resultStr += predictedSquareName;
-		Vector3 oldSquare = square; 
-		square = predictedSquare; 
+		Vector3 oldSquare = square;
+		square = predictedSquare;
 		Debug.Log("Moved to " + coordinatesToSquare(square));
 		pathTrace += "-" + predictedSquareName;
 		int col,row;
@@ -280,8 +280,8 @@ public class playerArrowTile : MonoBehaviour {
 		squares_explored[col,row] = true;
 		obstacles.Add(predictedSquareName);
 
-		predictedSquare.x = 2f * square.x - oldSquare.x; 
-		predictedSquare.y = 2f * square.y - oldSquare.y; 
+		predictedSquare.x = 2f * square.x - oldSquare.x;
+		predictedSquare.y = 2f * square.y - oldSquare.y;
 		return predictedSquareName;
 	}
 
@@ -315,8 +315,10 @@ public class playerArrowTile : MonoBehaviour {
 	// (end game data has already been logged)
 	public void saveAndQuit() {
 		//resultStr += "END_SESSION,no,";
-		SendSaveResult();
-		SceneManager.LoadScene("postgame_survey");
+		//TODO:Cheryl temporarily comment this part for test
+		//SendSaveResult();
+		//SceneManager.LoadScene("postgame_survey");
+		SceneManager.LoadScene("start room");
 	}
 
 	private void SendSaveResult()
@@ -363,17 +365,17 @@ public class playerArrowTile : MonoBehaviour {
 		}
 
 		//Data collection variables
-		moves = 0; 
+		moves = 0;
 		startTime = Time.time;
-		game_time = 0f; 
+		game_time = 0f;
 
 		/* use these  to figure out which quadrant player tries first */
-		left_squares = 1; 
-		right_squares = 0; 
-		top_squares = 0; 
-		bottom_squares = 1; 
+		left_squares = 1;
+		right_squares = 0;
+		top_squares = 0;
+		bottom_squares = 1;
 
-		num_squares_explored = 1; 
+		num_squares_explored = 1;
 		avg_time_per_move = 0f;
 		left_right_symmetry = -1f;
 		top_bottom_symmetry = -1f;
@@ -466,7 +468,7 @@ public class playerArrowTile : MonoBehaviour {
 	}
 
 	private void logEndGameData(){
-		longest_straight_path = getLongestStraightPath(); 
+		longest_straight_path = getLongestStraightPath();
 		game_time = (Time.time - startTime);
 
 		if(moves == 0) {
@@ -538,12 +540,23 @@ public class playerArrowTile : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+
 		if(!victorious) {
 			if(victory()) {
 				victories++;
 				logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
+				//Cheryl
+				yes.onClick.AddListener(newGame);
+				no.onClick.AddListener(saveAndQuit);
+
+				// if(yes.onClick){
+				// 	newGame();
+				// }
+				// else if{
+				//
+				// }
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				bool turned = turnDown ();
 				tryMove(turned);
@@ -559,6 +572,11 @@ public class playerArrowTile : MonoBehaviour {
 			}
 		}
 	}
+	// public void newGame() {
+	// 	plays++;
+	// 	reset();
+	// 	//resultStr += "NEW_GAME,tile,";
+	// }
 
 	public void tryMove(bool turned) {
 		if(canMove()) {
@@ -568,9 +586,9 @@ public class playerArrowTile : MonoBehaviour {
 			}
 			logMoveData();
 			string newLoc = move();
-			countLeftRightSymmetry(newLoc); 
-			countTopBottomSymmetry(newLoc); 
+			countLeftRightSymmetry(newLoc);
+			countTopBottomSymmetry(newLoc);
 
-		} 
+		}
 	}
 }
