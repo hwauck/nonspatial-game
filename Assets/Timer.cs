@@ -9,11 +9,11 @@ public class Timer : MonoBehaviour {
 
 	public float waitTime;
 
-	public InputField timerLabel;
+	public Text timeRemaining;
 
 	public GameObject TimeOut;
 
-	public GameObject player;
+	public playerArrowIce playerArrow;
 
 	private float timer;
 
@@ -32,14 +32,12 @@ public class Timer : MonoBehaviour {
 
 		if(!victory){
 			if(minutes <= 0 && seconds <= 0){
-				timerLabel.text = "00:00";
+				timeRemaining.text = "Time Left:\n\n00:00";
 				TimeOut.SetActive(true);
-				GameObject timeOutLabel = TimeOut.transform.Find("TimeOutLabel").gameObject;
-				timeOutLabel.GetComponent<InputField>().text = "You Are Out Of Time";
 
-				player.GetComponent<playerArrowIce>().SetTimedOut(true);
+				playerArrow.SetTimedOut(true);
 			}else{
-				timerLabel.text = "" + minutes.ToString("00") + ":" + seconds.ToString("00");
+				timeRemaining.text = "Time Left:\n\n" + minutes.ToString("00") + ":" + seconds.ToString("00");
 			}
 		}
 	}
@@ -54,8 +52,8 @@ public class Timer : MonoBehaviour {
 	}
 
 	public void Restart () {
-		player.GetComponent<playerArrowIce>().SetTimedOut(false);
-		player.GetComponent<playerArrowIce>().newGame();
+		playerArrow.SetTimedOut(false);
+		playerArrow.newGame();
 		TimeOut.SetActive(false);
 	}
 }

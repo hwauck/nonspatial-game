@@ -330,7 +330,7 @@ public class playerArrowTile : MonoBehaviour {
 		resultStr += "SESSION_TIME," + session_time;
 		Debug.Log(resultStr);
 
-		GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 
 	}
 

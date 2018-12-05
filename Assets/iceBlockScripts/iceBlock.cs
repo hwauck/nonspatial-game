@@ -4,6 +4,7 @@ using System.Collections;
 
 public class iceBlock : MonoBehaviour {
 
+    public float boardScalingFactor;
 	public int NUM_ROWS;
 	public int NUM_COLS;
 	public playerArrowIce player;
@@ -26,6 +27,7 @@ public class iceBlock : MonoBehaviour {
 	private int successfulPushes;
 	private int[,] squaresExplored; // each entry indicates how many times a square has been explored
 	public string[] movementSquares; // ice can only move on white squares
+
 
 	// Use this for initialization
 	void Start () {
@@ -162,7 +164,7 @@ public class iceBlock : MonoBehaviour {
 	}
 
 	public string moveOneSquare() {
-		transform.Translate(direction * 2f, Space.World);
+		transform.Translate(direction * 2f * boardScalingFactor, Space.World);
 		string newLoc = coordinatesToSquare(predictedSquare);
 		int x = Convert.ToInt32(newLoc.Substring(0,1));
 		int y = Convert.ToInt32(newLoc.Substring(1,1));

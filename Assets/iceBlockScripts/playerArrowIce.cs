@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class playerArrowIce : MonoBehaviour {
 
+    public float boardScalingFactor;
 	public GameObject timer;
 	public int NUM_ROWS;
 	public int NUM_COLS;
@@ -429,7 +430,7 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	public string move() {
-		transform.Translate(direction * 2f, Space.World);
+		transform.Translate(direction * 2f * boardScalingFactor, Space.World);
 		//num_traversed_squares_player++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
 
@@ -530,7 +531,7 @@ public class playerArrowIce : MonoBehaviour {
 		resultStr += "SESSION_TIME," + session_time;
 		GameObject dc = GameObject.Find("DataCollector");
 		if(dc != null){
-			GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
+			//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
 		}
 		Debug.Log("resultStr = " + resultStr);
 
