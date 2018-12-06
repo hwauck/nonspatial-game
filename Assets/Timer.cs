@@ -19,8 +19,9 @@ public class Timer : MonoBehaviour {
 
 	private bool victory = false;
 
-	void Start () {
+    void Start () {
 		timer = waitTime;
+ 
 	}
 	
 	// Update is called once per frame

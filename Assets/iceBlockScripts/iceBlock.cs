@@ -4,7 +4,7 @@ using System.Collections;
 
 public class iceBlock : MonoBehaviour {
 
-    public float boardScalingFactor;
+    public float boardScalingFactor = 1;
 	public int NUM_ROWS;
 	public int NUM_COLS;
 	public playerArrowIce player;
@@ -27,11 +27,17 @@ public class iceBlock : MonoBehaviour {
 	private int successfulPushes;
 	private int[,] squaresExplored; // each entry indicates how many times a square has been explored
 	public string[] movementSquares; // ice can only move on white squares
-
+    private DataCollector dataCollector;
 
 	// Use this for initialization
 	void Start () {
-		right = new Vector3(0,0,270);
+        GameObject collectorObj = GameObject.Find("DataCollector");
+        if (collectorObj != null)
+        {
+            dataCollector = collectorObj.GetComponent<DataCollector>();
+        }
+
+        right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
 		up = new Vector3(0,0,0);
 		down = new Vector3(0,0,180);
@@ -217,6 +223,7 @@ public class iceBlock : MonoBehaviour {
 			iceCantMove++;
 		} else {
 			successfulPushes++;
+            
 		}
 		if(offScreen()) {
 			iceBlockedByOffscreen++;

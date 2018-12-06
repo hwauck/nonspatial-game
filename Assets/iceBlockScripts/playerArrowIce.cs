@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class playerArrowIce : MonoBehaviour {
 
-    public float boardScalingFactor;
+    public float boardScalingFactor = 1;
 	public GameObject timer;
 	public int NUM_ROWS;
 	public int NUM_COLS;
@@ -40,6 +40,7 @@ public class playerArrowIce : MonoBehaviour {
 	private int plays;
 	private int victories;
 	private int resets;
+    private DataCollector dataCollector; 
 
 	/* MOVEMENT DATA */
 	private int actions; //number of times player either moves or pushes
@@ -88,28 +89,6 @@ public class playerArrowIce : MonoBehaviour {
 	private List<string> squares_explored_player_list_store;
 	*/
 
-	/* ICE LOCATION DATA */
-	/*
-	private int left_squares_ice; //including repetitions
-	private int right_squares_ice; //including repetitions
-	private int top_squares_ice; //including repetitions
-	private int bottom_squares_ice; //including repetitions
-	private int num_repeated_squares_ice;
-	private int num_traversed_squares_ice;
-	private int squares_explored_ice; // squares ice blocks have moved onto/across
-	private float left_right_symmetry_ice;
-	private float top_bottom_symmetry_ice;
-	public List<string> squares_explored_ice_list;
-	private List<string> squares_explored_ice_list_store;
-	*/
-
-	/* Keep track of which squares are in which area of board */
-	/*
-	public List<string> left_squares_list;
-	public List<string> right_squares_list;
-	public List<string> top_squares_list;
-	public List<string> bottom_squares_list;
-	*/
 
 	private string pathTrace;
 
@@ -127,8 +106,13 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//resultStr = "NEW_GAME,ice,";
-		direction = Vector3.right;
+        //resultStr = "NEW_GAME,ice,";
+        GameObject collectorObj = GameObject.Find("DataCollector");
+        if (collectorObj != null)
+        {
+            dataCollector = collectorObj.GetComponent<DataCollector>();
+        }
+        direction = Vector3.right;
 		prevMoveDir = direction;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
@@ -430,9 +414,12 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	public string move() {
+        dataCollector.AddMove();
+
 		transform.Translate(direction * 2f * boardScalingFactor, Space.World);
 		//num_traversed_squares_player++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
+        Debug.Log("MOVED TO " + predictedSquareName);
 
 		pathTrace += "-" + predictedSquareName;
 
@@ -485,6 +472,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// logs end game data, increments resets, and saves results to database
 	// only when "Play Again? Yes" button is clicked
+    // TODO - get rid of this. Replace with victory message saying you completed the puzzle and got the key fragment, load start room
 	public void newGame() {
 		plays++;
 		reset();
@@ -496,6 +484,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// when the "Reset" button is clicked
 	public void buttonReset() {
+        dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
 		resets++;
 		plays++;
 		logEndGameData();
@@ -505,45 +494,20 @@ public class playerArrowIce : MonoBehaviour {
 
 	// only when "I'm done playing" button is clicked
 	// (end game data has not yet been logged)
+    // this ends the whole game and takes player to next part of pilot study
+    // TODO - this should only happen when player presses C key - get rid of this button in each level
 	public void buttonQuit() {
 		logEndGameData();
-		//resultStr += "OUTCOME,QUIT,END_SESSION,done,";
-		SendSaveResult();
-		SceneManager.LoadScene("postgame_survey");
-	}
+        //resultStr += "OUTCOME,QUIT,END_SESSION,done,";
 
-	// only when "Play Again? No" button is clicked
-	// (end game data has already been logged)
-	public void saveAndQuit() {
-		//resultStr += "END_SESSION,no,";
-		//TODO: change this part later for test purpose
-		// SendSaveResult();
-		// SceneManager.LoadScene("postgame_survey");
-		SceneManager.LoadScene("start room");
-	}
+        // For testing purposes - TODO will need to make these happen when player presses C key instead in future
+        dataCollector.saveAllData();
+        SceneManager.LoadScene("start room");
+   	}
 
-	private void SendSaveResult()
-	{
-		session_time = Time.time - sessionStart_time;
-		//resultStr += "ATTEMPTS," + plays + ",";
-		resultStr += "RESETS," + resets + ",";
-		//resultStr += "VICTORIES," + victories + ",";
-		resultStr += "SESSION_TIME," + session_time;
-		GameObject dc = GameObject.Find("DataCollector");
-		if(dc != null){
-			//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
-		}
-		Debug.Log("resultStr = " + resultStr);
 
-	}
 
 	public void reset() {
-		if(victorious) {
-			victorious = false;
-		}
-		//transform.position = new Vector3(-4.5f,-4,0);
-		//square = new Vector2(5,2);
-		//predictedSquare = new Vector2(5,3);
 		transform.position = startPosition;
 		square = new Vector2(square_store.x, square_store.y);
 		predictedSquare = new Vector2(predictedSquare_store.x, predictedSquare_store.y);
@@ -571,49 +535,6 @@ public class playerArrowIce : MonoBehaviour {
 		iceBlockedByOffscreen = 0;
 		iceStoppedByIce = 0;
 		iceStoppedByOffscreen = 0;
-
-		/*
-		squares_explored_player_list = new List<string>();
-		squares_explored_player_list.Add ("52");
-
-		squares_explored_ice_list = new List<string>();
-		squares_explored_ice_list.Add ("22");
-		squares_explored_ice_list.Add ("42");
-		squares_explored_ice_list.Add ("26");
-		*/
-
-		/*
-		squares_explored_player_list = new List<string>();
-		foreach(string s in squares_explored_player_list_store){
-			squares_explored_player_list.Add(s);
-		}
-
-		squares_explored_ice_list = new List<string>();
-		foreach(string s in squares_explored_ice_list_store){
-			squares_explored_ice_list.Add(s);
-		}
-
-
-		left_squares_player = 1;
-		right_squares_player = 0;
-		squares_explored_player = 1;
-		num_repeated_squares_player = 0;
-		num_traversed_squares_player = 1;
-
-		left_squares_ice = 0; // because it will be calculated at end
-		right_squares_ice = 0; // because it will be calculated at end
-		top_squares_ice = 0; // because it will be calculated at end
-		bottom_squares_ice = 0; // because it will be calculated at end
-		squares_explored_ice = 0; // because it will be calculated at end
-		num_repeated_squares_ice = 0; // because it will be calculated at end
-		num_traversed_squares_ice = 0; // because it will be calculated at end
-
-		left_right_symmetry_player = -1f;
-		top_bottom_symmetry_player = -1f;
-		left_right_symmetry_ice = -1f;
-		top_bottom_symmetry_ice = -1f;
-
-		*/
 
 		pathTrace = coordinatesToSquare(square);
 
@@ -903,6 +824,7 @@ public class playerArrowIce : MonoBehaviour {
 	void Update () {
 		if(!victorious) {
 			if(victory()) {
+                dataCollector.setOutcome("victory");
 				logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
@@ -973,21 +895,18 @@ public class playerArrowIce : MonoBehaviour {
 		logActionData ();
 		bool[] errorsPlayer = getErrorType ();
 		if(!errorsPlayer[0] && !errorsPlayer[1]) {
-			// player moves physically in the direction they are turned
+            // player moves physically in the direction they are turned
+            Debug.Log("PLAYER MOVED");
 			logMoveData();
 			if(!approximately(prevMoveDir, direction)) {
 				pathTurns++;
-				Debug.Log("path turned! pathTurns = " + pathTurns);
 				prevMoveDir = direction;
 			}
 			string newLoc = move();
-			/*
-			countLeftRightSymmetry(newLoc); // includes repetitions
-			countTopBottomSymmetry(newLoc); //includes repetitions
-			*/
 
 		} else if(errorsPlayer[1]) {
-			//Player blocked by ice, move ice if possible
+            //Player blocked by ice, move ice if possible
+            Debug.Log("BLOCKED BY ICE");
 			logPushData();
 			foreach(iceBlock i in ices) {
 				if(predictedSquare == i.square) {
@@ -1000,6 +919,7 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	public void SetTimedOut (bool timedOut) {
-		this.timedOut = timedOut;
+        dataCollector.setOutcome("time");
+        this.timedOut = timedOut;
 	}
 }
