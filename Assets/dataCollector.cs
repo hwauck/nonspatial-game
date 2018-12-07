@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class DataCollector : MonoBehaviour {
 
+    private static DataCollector instance;
+
     // overall variables
     private float sessionTime; // how long the player spent with the entire game
     private string levelOrder; // in which order the player attempted levels
@@ -47,6 +49,15 @@ public class DataCollector : MonoBehaviour {
     }
 
 	void Awake () {
+        if(instance == null)
+        {
+            instance = this;
+        } else
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+
 		//makes the GameObject with this script attached to it persist across game levels
 		DontDestroyOnLoad(transform.gameObject);
         sessionTime = 0;

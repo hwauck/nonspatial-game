@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class playerArrowTile : MonoBehaviour {
-	public int NUM_ROWS;
+    public float boardScalingFactor = 1;
+    public int NUM_ROWS;
 	public int NUM_COLS;
 	public int START_COL;
 	public int START_ROW;
@@ -33,8 +34,10 @@ public class playerArrowTile : MonoBehaviour {
 
 	// Data collection
 	string resultStr;
+    private DataCollector dataCollector;
 
-	private int plays;
+
+    private int plays;
 	private int victories; // don't reset
 	private int resets; // don't reset
 	private int moves;
@@ -67,7 +70,14 @@ public class playerArrowTile : MonoBehaviour {
 	private IList<string> bottom_squares_list;
 	public GameObject[] boardSquares;
 
-	void Awake() {
+    private Sprite upSprite;
+    private Sprite downSprite;
+    private Sprite leftSprite;
+    private Sprite rightSprite;
+    private SpriteRenderer spriteRenderer;
+    private Color boardColor;
+
+    void Awake() {
 		victorious = false;
 		startTime = Time.time;
 		sessionStart_time = startTime;
@@ -78,8 +88,20 @@ public class playerArrowTile : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		//resultStr = "NEW_GAME,tile,";
-		boardSquares[PLAYER_START_INDEX].GetComponent<SpriteRenderer>().color = Color.yellow;
+        GameObject collectorObj = GameObject.Find("DataCollector");
+        if (collectorObj != null)
+        {
+            dataCollector = collectorObj.GetComponent<DataCollector>();
+        }
+
+        upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
+        downSprite = Resources.Load<Sprite>("player_astronaut/player-down");
+        leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
+        rightSprite = Resources.Load<Sprite>("player_astronaut/player-right");
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        boardColor = new Color(226, 100, 44);
+
+        boardSquares[PLAYER_START_INDEX].GetComponent<SpriteRenderer>().color = Color.yellow;
 		direction = Vector3.up;
 		right = new Vector3(0,0,270);
 		left = new Vector3(0,0,90);
@@ -103,10 +125,7 @@ public class playerArrowTile : MonoBehaviour {
 		squares_explored = new bool[NUM_COLS,NUM_ROWS];
 		squares_explored[START_COL,START_ROW] = true;
 
-		left_squares_list = new List<string>();
-		right_squares_list = new List<string>();
-		top_squares_list = new List<string>();
-		bottom_squares_list = new List<string>();
+
 		obstacles = new List<string>();
 		for(int i = 0; i < initialObstacles.Length; i++) {
 			obstacles.Add(initialObstacles[i]);
@@ -114,25 +133,7 @@ public class playerArrowTile : MonoBehaviour {
 		}
 		obstacles.Add(coordinatesToSquare(square)); // player start loc
 
-		// blockColRow
-		int halfCol = NUM_COLS/2;
-		int halfRow = NUM_ROWS/2;
-		for(int row = 0; row < NUM_ROWS; row++) {
-			for(int col = 0; col < NUM_COLS; col++) {
-				squares_explored[col,row] = false;
-				if(col < halfCol) {
-					left_squares_list.Add("" + col + "" + row);
-				} else if (col > halfCol) {
-					right_squares_list.Add("" + col + "" + row);
-				}
-
-				if(row < halfRow) {
-					bottom_squares_list.Add("" + col + "" + row);
-				} else if (row > halfRow) {
-					top_squares_list.Add("" + col + "" + row);
-				}
-			}
-		}
+	
 
 		//Victory UI variables
 		yes = GameObject.Find ("Yes").GetComponent<Button>();
@@ -259,7 +260,15 @@ public class playerArrowTile : MonoBehaviour {
 	}
 
 	public string move() {
-		transform.Translate(direction * 1.25f, Space.World);
+        if (dataCollector != null)
+        {
+            dataCollector.AddMove();
+        }else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+
+        transform.Translate(direction * boardScalingFactor * 1.25f, Space.World);
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
 		GameObject.Find("block" + predictedSquareName).GetComponent<SpriteRenderer>().color = Color.yellow;
 		//resultStr += predictedSquareName;
@@ -295,20 +304,46 @@ public class playerArrowTile : MonoBehaviour {
 
 	// when the "Reset" button is clicked
 	public void buttonReset() {
-		plays++;
-		resets++;
-		logEndGameData();
-		reset();
+        if (dataCollector != null)
+        {
+            dataCollector.setOutcome("reset");
+            dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+        reset();
 		//resultStr += "OUTCOME,RESET,NEW_ATTEMPT,tile,";
 	}
 
-	// only when "I'm done playing" button is clicked
-	// (end game data has not yet been logged)
-	public void buttonQuit() {
-		logEndGameData();
-		//resultStr += "OUTCOME,QUIT,END_SESSION,done,";
-		SendSaveResult();
-		SceneManager.LoadScene("postgame_survey");
+    //called by trigger event when player steps on the stairs/door tile
+    public void leaveRoom()
+    {
+        if (dataCollector != null)
+        {
+            dataCollector.setOutcome("left");
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+        SceneManager.LoadScene("start room");
+
+    }
+
+    // only when "I'm done playing" button is clicked
+    // (end game data has not yet been logged)
+    // TODO: this should happen when player exits room instead of button click
+    public void buttonQuit() {
+        if (dataCollector != null)
+        {
+            dataCollector.saveAllData();
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+
+        //SceneManager.LoadScene("postgame_survey");
+        SceneManager.LoadScene("start room");
 	}
 
 	// only when "Play Again? No" button is clicked
@@ -316,23 +351,11 @@ public class playerArrowTile : MonoBehaviour {
 	public void saveAndQuit() {
 		//resultStr += "END_SESSION,no,";
 		//TODO:Cheryl temporarily comment this part for test
-		//SendSaveResult();
 		//SceneManager.LoadScene("postgame_survey");
 		SceneManager.LoadScene("start room");
 	}
 
-	private void SendSaveResult()
-	{
-		session_time = Time.time - sessionStart_time;
-		//resultStr += "ATTEMPTS," + plays + ",";
-		resultStr += "RESETS," + resets + ",";
-		//resultStr += "VICTORIES," + victories + ",";
-		resultStr += "SESSION_TIME," + session_time;
-		Debug.Log(resultStr);
 
-		//GameObject.Find("DataCollector").GetComponent<dataCollector>().setPlayerData(resultStr);
-
-	}
 
 	// when the "Reset" button is clicked
 	public void reset() {
@@ -347,7 +370,7 @@ public class playerArrowTile : MonoBehaviour {
 
 		//change all board squares back to white (except starting square)
 		for(int i = 0; i < boardSquares.Length; i++) {
-				boardSquares[i].GetComponent<SpriteRenderer>().color = Color.white;
+				boardSquares[i].GetComponent<SpriteRenderer>().color = boardColor;
 		}
 		boardSquares[PLAYER_START_INDEX].GetComponent<SpriteRenderer>().color = Color.yellow;
 
@@ -397,143 +420,45 @@ public class playerArrowTile : MonoBehaviour {
 		return false;
 	}
 
-	public bool turnDown(){
-		bool turned;
-		if(approximately(direction, Vector3.down)) {
-			turned = false;
-		} else {
-			direction = Vector3.down;
-			turned = true;
-		}
+	public void turnDown(){
+		direction = Vector3.down;
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y - 1;
-		return turned;
-	}
+        spriteRenderer.sprite = downSprite;
 
-	public bool turnUp(){
-		bool turned;
-		if(approximately(direction, Vector3.up)) {
-			turned = false;
-		} else {
-			direction = Vector3.up;
-			turned = true;
-		}
+    }
+
+    public void turnUp(){
+		direction = Vector3.up;
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y + 1;
-		return turned;
+        spriteRenderer.sprite = upSprite;
 
-	}
+    }
 
-	public bool turnLeft(){
-		bool turned;
-		if(approximately(direction, Vector3.left)) {
-			turned = false;
-		} else {
-			direction = Vector3.left;
-			turned = true;
-		}
+    public void turnLeft(){
+		direction = Vector3.left;
 		predictedSquare.x = square.x - 1;
 		predictedSquare.y = square.y;
-		return turned;
-	}
+        spriteRenderer.sprite = leftSprite;
 
-	public bool turnRight(){
-		bool turned;
-		if(approximately(direction, Vector3.right)) {
-			turned = false;
-		} else {
-			direction = Vector3.right;
-			turned = true;
-		}
+    }
+
+    public void turnRight(){
+		direction = Vector3.right;
 		predictedSquare.x = square.x + 1;
 		predictedSquare.y = square.y;
-		return turned;
-	}
+        spriteRenderer.sprite = rightSprite;
 
-	private void logMoveData() {
-		moves++;
-		float currentTime = Time.time;
-		float currentMoveTime = currentTime - prevMoveEndTime;
-		avg_time_per_move += currentMoveTime;
-		prevMoveEndTime = currentTime;
-	}
+    }
 
-	private bool victory() {
+
+    private bool victory() {
 		if(obstacles.Count == NUM_ROWS * NUM_COLS) {
 			victorious = true;
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	private void logEndGameData(){
-		longest_straight_path = getLongestStraightPath();
-		game_time = (Time.time - startTime);
-
-		if(moves == 0) {
-			avg_time_per_move = -1f;
-			avg_path_turns_per_move = -1f;
-
-		} else {
-			avg_time_per_move = avg_time_per_move/moves;
-			avg_path_turns_per_move = pathTurns / (1.0f * moves);
-
-		}
-
-		for(int row = 0; row < NUM_ROWS; row++) {
-			for(int col = 0; col < NUM_COLS; col++) {
-				if(squares_explored[col,row]) {
-					num_squares_explored++;
-				}
-			}
-		}
-
-		if(right_squares == 0) {
-			left_right_symmetry = -1f;
-		} else {
-			left_right_symmetry = (left_squares / (right_squares * 1.0f));
-		}
-		if(bottom_squares == 0) {
-			top_bottom_symmetry = -1f;
-		} else {
-			top_bottom_symmetry = (top_squares / (bottom_squares * 1.0f));
-		}
-
-
-		resultStr +="TOTAL_MOVES," + moves+",";
-		//resultStr +="AVG_TIME_PER_MOVE," + avg_time_per_move.ToString()+",";
-
-		//resultStr +="SQUARES_EXPLORED," + num_squares_explored+",";
-		//resultStr += "LEFT_SQUARES," + left_squares + ",";
-		//resultStr += "RIGHT_SQUARES," + right_squares + ",";
-		//resultStr += "TOP_SQUARES," + top_squares + ",";
-		//resultStr += "BOTTOM_SQUARES," + bottom_squares + ",";
-		//resultStr +="LEFT_RIGHT_SYMMETRY," + left_right_symmetry +",";
-		//resultStr +="TOP_BOTTOM_SYMMETRY," + top_bottom_symmetry +",";
-
-		//resultStr +="LONGEST_STRAIGHT_PATH," + longest_straight_path + ",";
-		//resultStr +="PATH_TURNS," + pathTurns + ",";
-		//resultStr +="AVG_PATH_TURNS_PER_MOVE," + avg_path_turns_per_move + ",";
-
-		//resultStr +="TOTAL_TIME," + game_time + ",";
-		//resultStr +="PATH_TRACE," + pathTrace + ",";
-
-	}
-
-	private void countLeftRightSymmetry(string newLoc) {
-		if(left_squares_list.Contains (newLoc)) {
-			left_squares++;
-		} else if (right_squares_list.Contains (newLoc)) {
-			right_squares++;
-		}
-	}
-
-	private void countTopBottomSymmetry(string newLoc) {
-		if(bottom_squares_list.Contains (newLoc)) {
-			bottom_squares++;
-		} else if (top_squares_list.Contains (newLoc)) {
-			top_squares++;
 		}
 	}
 
@@ -543,8 +468,14 @@ public class playerArrowTile : MonoBehaviour {
 
 		if(!victorious) {
 			if(victory()) {
-				victories++;
-				logEndGameData ();
+                if (dataCollector != null)
+                {
+                    dataCollector.setOutcome("victory");
+                } else
+                {
+                    Debug.Log("Warning: DataCollector not found in scene (Ignore if running this scene in isolation).");
+                }
+                victories++;
 				//resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
 				//Cheryl
@@ -558,17 +489,17 @@ public class playerArrowTile : MonoBehaviour {
 				//
 				// }
 			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
-				bool turned = turnDown ();
-				tryMove(turned);
+				turnDown ();
+				tryMove();
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-				bool turned = turnUp ();
-				tryMove(turned);
+				turnUp ();
+				tryMove();
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-				bool turned = turnRight ();
-				tryMove(turned);
+				turnRight ();
+				tryMove();
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-				bool turned = turnLeft ();
-				tryMove(turned);
+				turnLeft ();
+				tryMove();
 			}
 		}
 	}
@@ -578,16 +509,10 @@ public class playerArrowTile : MonoBehaviour {
 	// 	//resultStr += "NEW_GAME,tile,";
 	// }
 
-	public void tryMove(bool turned) {
+	public void tryMove() {
 		if(canMove()) {
 			// player moves physically in the direction they are turned
-			if(turned) {
-				pathTurns++;
-			}
-			logMoveData();
-			string newLoc = move();
-			countLeftRightSymmetry(newLoc);
-			countTopBottomSymmetry(newLoc);
+			move();
 
 		}
 	}

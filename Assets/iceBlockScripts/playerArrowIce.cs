@@ -404,9 +404,15 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	public string move() {
-        dataCollector.AddMove();
+        if (dataCollector != null)
+        {
+            dataCollector.AddMove();
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
 
-		transform.Translate(direction * 2f * boardScalingFactor, Space.World);
+        transform.Translate(direction * 2f * boardScalingFactor, Space.World);
 		//num_traversed_squares_player++;
 		string predictedSquareName = coordinatesToSquare(predictedSquare);
         Debug.Log("MOVED TO " + predictedSquareName);
@@ -475,9 +481,15 @@ public class playerArrowIce : MonoBehaviour {
 
 	// when the "Reset" button is clicked
 	public void buttonReset() {
-        dataCollector.setOutcome("reset");
-        dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
-		resets++;
+        if (dataCollector != null)
+        {
+            dataCollector.setOutcome("reset");
+            dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+        resets++;
 		plays++;
 		logEndGameData();
 		reset();
@@ -490,17 +502,28 @@ public class playerArrowIce : MonoBehaviour {
     // TODO - this should only happen when player presses C key - get rid of this button in each level
 	public void buttonQuit() {
 		logEndGameData();
-        //resultStr += "OUTCOME,QUIT,END_SESSION,done,";
 
         // For testing purposes - TODO will need to make these happen when player presses C key instead in future
-        dataCollector.saveAllData();
+        if (dataCollector != null)
+        {
+            dataCollector.saveAllData();
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
         SceneManager.LoadScene("start room");
    	}
 
     //called by trigger event when player steps on the stairs/door tile
     public void leaveRoom()
     {
-        dataCollector.setOutcome("left");
+        if (dataCollector != null)
+        {
+            dataCollector.setOutcome("left");
+        } else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
         SceneManager.LoadScene("start room");
 
     }
@@ -822,8 +845,14 @@ public class playerArrowIce : MonoBehaviour {
 	void Update () {
 		if(!victorious) {
 			if(victory()) {
-                dataCollector.setOutcome("victory");
-				logEndGameData ();
+                if (dataCollector != null)
+                {
+                    dataCollector.setOutcome("victory");
+                } else
+                {
+                    Debug.Log("Warning: DataCollector not found in scene.");
+                }
+                logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
 				displayOptions();
@@ -905,7 +934,10 @@ public class playerArrowIce : MonoBehaviour {
 	}
 
 	public void SetTimedOut (bool timedOut) {
-        dataCollector.setOutcome("time");
+        if (dataCollector != null)
+        {
+            dataCollector.setOutcome("time");
+        }
         this.timedOut = timedOut;
 	}
 }

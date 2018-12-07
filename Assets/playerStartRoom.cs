@@ -13,21 +13,24 @@ public class playerStartRoom : MonoBehaviour {
     public Vector2 startingSquare;
     private Vector3 direction;
 
-    private Vector3 right;
-    private Vector3 left;
-    private Vector3 up;
-    private Vector3 down;
+    private Sprite upSprite;
+    private Sprite downSprite;
+    private Sprite leftSprite;
+    private Sprite rightSprite;
+    private SpriteRenderer spriteRenderer;
 
     // Use this for initialization
     void Start () {
-        right = new Vector3(0,0,270);
-        left = new Vector3(0,0,90);
-        up = new Vector3(0,0,0);
-        down = new Vector3(0,0,180);
         dataCollector = GameObject.Find("DataCollector").GetComponent<DataCollector>();
 
         direction = Vector3.right;
         square = startingSquare;
+
+        upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
+        downSprite = Resources.Load<Sprite>("player_astronaut/player-down");
+        leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
+        rightSprite = Resources.Load<Sprite>("player_astronaut/player-right");
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
     }
 
     private bool offScreen()
@@ -48,36 +51,36 @@ public class playerStartRoom : MonoBehaviour {
     public void turnDown()
     {
         direction = Vector3.down;
-        transform.rotation = Quaternion.Euler(down);
         predictedSquare.x = square.x + 1;
         predictedSquare.y = square.y;
+        spriteRenderer.sprite = downSprite;
 
     }
 
     public void turnUp()
     {
         direction = Vector3.up;
-        transform.rotation = Quaternion.Euler(up);
         predictedSquare.x = square.x - 1;
         predictedSquare.y = square.y;
+        spriteRenderer.sprite = upSprite;
 
     }
 
     public void turnLeft()
     {
         direction = Vector3.left;
-        transform.rotation = Quaternion.Euler(left);
         predictedSquare.x = square.x;
         predictedSquare.y = square.y - 1;
+        spriteRenderer.sprite = leftSprite;
 
     }
 
     public void turnRight()
     {
         direction = Vector3.right;
-        transform.rotation = Quaternion.Euler(right);
         predictedSquare.x = square.x;
         predictedSquare.y = square.y + 1;
+        spriteRenderer.sprite = rightSprite;
 
     }
 
@@ -163,15 +166,15 @@ public class playerStartRoom : MonoBehaviour {
             tryMove();
 		}
 		//This part is for going to other scenes
-		if(this.transform.position.x==-2.5&&this.transform.position.y==-8)  SceneManager.LoadScene("ice");
-		else if(this.transform.position.x==1.5&&this.transform.position.y==-8) SceneManager.LoadScene("ice_2");
-		else if(this.transform.position.x==5.5&&this.transform.position.y==-8) SceneManager.LoadScene("ice_3");
-		else if(this.transform.position.x==11.5&&this.transform.position.y==-4) SceneManager.LoadScene("ice_4");
-		else if(this.transform.position.x==11.5&&this.transform.position.y==2) SceneManager.LoadScene("ice_5");
-		else if(this.transform.position.x==-6.5&&this.transform.position.y==-4) SceneManager.LoadScene("tile");
-		else if(this.transform.position.x==-6.5&&this.transform.position.y==2) SceneManager.LoadScene("tile2");
-		else if(this.transform.position.x==-0.5&&this.transform.position.y==6) SceneManager.LoadScene("tile3");
-		else if(this.transform.position.x==5.5&&this.transform.position.y==6) SceneManager.LoadScene("tileHard");
+		//if(this.transform.position.x==-2.5&&this.transform.position.y==-8)  SceneManager.LoadScene("ice");
+		//else if(this.transform.position.x==1.5&&this.transform.position.y==-8) SceneManager.LoadScene("ice_2");
+		//else if(this.transform.position.x==5.5&&this.transform.position.y==-8) SceneManager.LoadScene("ice_3");
+		//else if(this.transform.position.x==11.5&&this.transform.position.y==-4) SceneManager.LoadScene("ice_4");
+		//else if(this.transform.position.x==11.5&&this.transform.position.y==2) SceneManager.LoadScene("ice_5");
+		//else if(this.transform.position.x==-6.5&&this.transform.position.y==-4) SceneManager.LoadScene("tile");
+		//else if(this.transform.position.x==-6.5&&this.transform.position.y==2) SceneManager.LoadScene("tile2");
+		//else if(this.transform.position.x==-0.5&&this.transform.position.y==6) SceneManager.LoadScene("tile3");
+		//else if(this.transform.position.x==5.5&&this.transform.position.y==6) SceneManager.LoadScene("tileHard");
 
 	}
 }
