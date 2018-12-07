@@ -5,37 +5,162 @@ using UnityEngine.SceneManagement;
 
 public class playerStartRoom : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		// right = new Vector3(0,0,270);
-		// left = new Vector3(0,0,90);
-		// up = new Vector3(0,0,0);
-		// down = new Vector3(0,0,180);
-	}
+    public float boardScalingFactor = 1;
 
-	// Update is called once per frame
-	void Update () {
+    private DataCollector dataCollector;
+    public Vector2 predictedSquare;
+    private Vector2 square;
+    public Vector2 startingSquare;
+    private Vector3 direction;
+
+    private Vector3 right;
+    private Vector3 left;
+    private Vector3 up;
+    private Vector3 down;
+
+    // Use this for initialization
+    void Start () {
+        right = new Vector3(0,0,270);
+        left = new Vector3(0,0,90);
+        up = new Vector3(0,0,0);
+        down = new Vector3(0,0,180);
+        dataCollector = GameObject.Find("DataCollector").GetComponent<DataCollector>();
+
+        direction = Vector3.right;
+        square = startingSquare;
+    }
+
+    private bool offScreen()
+    {
+        if (GameObject.Find("Block" + coordinatesToSquare(predictedSquare)) == null)
+        {
+            // can't move - offscreen
+            return true;
+        }
+        return false;
+    }
+
+    private string coordinatesToSquare(Vector2 coordinates)
+    {
+        return coordinates.x.ToString() + coordinates.y.ToString();
+    }
+
+    public void turnDown()
+    {
+        direction = Vector3.down;
+        transform.rotation = Quaternion.Euler(down);
+        predictedSquare.x = square.x + 1;
+        predictedSquare.y = square.y;
+
+    }
+
+    public void turnUp()
+    {
+        direction = Vector3.up;
+        transform.rotation = Quaternion.Euler(up);
+        predictedSquare.x = square.x - 1;
+        predictedSquare.y = square.y;
+
+    }
+
+    public void turnLeft()
+    {
+        direction = Vector3.left;
+        transform.rotation = Quaternion.Euler(left);
+        predictedSquare.x = square.x;
+        predictedSquare.y = square.y - 1;
+
+    }
+
+    public void turnRight()
+    {
+        direction = Vector3.right;
+        transform.rotation = Quaternion.Euler(right);
+        predictedSquare.x = square.x;
+        predictedSquare.y = square.y + 1;
+
+    }
+
+    private void tryMove()
+    {
+        if (!offScreen())
+        {
+            // player moves physically in the direction they are turned
+            Debug.Log("PLAYER MOVED");
+
+            string newLoc = move();
+
+        }
+ 
+    }
+
+    public string move()
+    {
+        dataCollector.AddMove();
+
+        transform.Translate(direction * 2f * boardScalingFactor, Space.World);
+        string predictedSquareName = coordinatesToSquare(predictedSquare);
+        Debug.Log("MOVED TO " + predictedSquareName);
+
+        Vector3 oldSquare = square;
+        square = predictedSquare;
+
+        predictedSquare.x = 2f * square.x - oldSquare.x;
+        predictedSquare.y = 2f * square.y - oldSquare.y;
+        return predictedSquareName;
+
+    }
+
+    private void OnTriggerEnter2D(Collider2D otherCollider)
+    {
+        if(otherCollider.gameObject.name.Equals("ToIce"))
+        {
+            SceneManager.LoadScene("ice");
+        } else if (otherCollider.gameObject.name.Equals("ToIce2"))
+        {
+            SceneManager.LoadScene("ice_2");
+        } else if (otherCollider.gameObject.name.Equals("ToIce3"))
+        {
+            SceneManager.LoadScene("ice_3");
+        } else if (otherCollider.gameObject.name.Equals("ToIce4"))
+        {
+            SceneManager.LoadScene("ice_4");
+        } else if (otherCollider.gameObject.name.Equals("ToIce5"))
+        {
+            SceneManager.LoadScene("ice_5");
+        } else if (otherCollider.gameObject.name.Equals("ToTimedIce"))
+        {
+            SceneManager.LoadScene("ice_timed");
+        } else if (otherCollider.gameObject.name.Equals("ToTile1"))
+        {
+            SceneManager.LoadScene("tile");
+        } else if (otherCollider.gameObject.name.Equals("ToTile2"))
+        {
+            SceneManager.LoadScene("tile2");
+        } else if (otherCollider.gameObject.name.Equals("ToTile3"))
+        {
+            SceneManager.LoadScene("tile3");
+        } else if (otherCollider.gameObject.name.Equals("ToTileHard"))
+        {
+            SceneManager.LoadScene("tileHard");
+        }
+    }
+
+    // Update is called once per frame
+    void Update () {
 		//This part is for moving
 		if (Input.GetKeyDown (KeyCode.DownArrow)) {
-			if(this.transform.position.y==-6){
-				if(this.transform.position.x==-2.5||this.transform.position.x==1.5||this.transform.position.x==5.5) transform.position = new Vector3(transform.position.x, transform.position.y-2, transform.position.z);
-			}
-			else if(this.transform.position.y>-6&&this.transform.position.x!=-6.5&&this.transform.position.x!=11.5) transform.position = new Vector3(transform.position.x, transform.position.y-2, transform.position.z);
+            turnDown();
+            tryMove();
 		} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
-			if(this.transform.position.y==4){
-				if(this.transform.position.x==-0.5||this.transform.position.x==5.5) transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
-			}
-			else if(this.transform.position.y<4&&this.transform.position.x!=-6.5&&this.transform.position.x!=11.5) transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
+            turnUp();
+            tryMove();
 		} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
-			if(this.transform.position.x==9.5){
-				if(this.transform.position.y==2||this.transform.position.y==-4) transform.position = new Vector3(transform.position.x+2, transform.position.y, transform.position.z);
-			}
-			else if(this.transform.position.x<9.5&&this.transform.position.y!=-8&&this.transform.position.y!=6) transform.position = new Vector3(transform.position.x+2, transform.position.y, transform.position.z);
+            turnRight();
+            tryMove();
 		} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
-			if(this.transform.position.x==-4.5){
-				if(this.transform.position.y==2||this.transform.position.y==-4) transform.position = new Vector3(transform.position.x-2, transform.position.y, transform.position.z);
-			}
-			else if(this.transform.position.x>-4.5&&this.transform.position.y!=-8&&this.transform.position.y!=6) transform.position = new Vector3(transform.position.x-2, transform.position.y, transform.position.z);
+            turnLeft();
+            tryMove();
 		}
 		//This part is for going to other scenes
 		if(this.transform.position.x==-2.5&&this.transform.position.y==-8)  SceneManager.LoadScene("ice");

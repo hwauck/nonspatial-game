@@ -275,16 +275,6 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
-	/*
-	public List<string> getSquaresPlayerExplored() {
-		return squares_explored_player_list;
-	}
-
-	public int getNumSquaresPlayerExplored() {
-		return squares_explored_player_list.Count;
-	}
-	*/
-
 	public int getNumMoves() {
 		return moves;
 	}
@@ -438,6 +428,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
+    // TODO: change all these to change the sprite rather than rotate it
 	public void turnDown(){
 		direction = Vector3.down;
 		transform.rotation = Quaternion.Euler(down);
@@ -484,6 +475,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// when the "Reset" button is clicked
 	public void buttonReset() {
+        dataCollector.setOutcome("reset");
         dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
 		resets++;
 		plays++;
@@ -505,7 +497,13 @@ public class playerArrowIce : MonoBehaviour {
         SceneManager.LoadScene("start room");
    	}
 
+    //called by trigger event when player steps on the stairs/door tile
+    public void leaveRoom()
+    {
+        dataCollector.setOutcome("left");
+        SceneManager.LoadScene("start room");
 
+    }
 
 	public void reset() {
 		transform.position = startPosition;
@@ -831,47 +829,35 @@ public class playerArrowIce : MonoBehaviour {
 				displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				if(!timedOut) {
-					if(approximately(direction, Vector3.down)) {
-						// move down
-						tryMove();
-					} else {
-						// turn down
-						turns++;
-						turnDown ();
-					}
+                    // turn down
+                    turnDown();
+                    // move down
+                    tryMove();
+
 				}
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
 				if(!timedOut){
-					if(approximately(direction, Vector3.up)) {
-						// move up
-						tryMove();
-					} else {
-						// turn up
-						turns++;
-						turnUp ();
-					}
+                    // turn up
+                    turnUp();
+                    // move up
+                    tryMove();
+
 				}
 			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
 				if(!timedOut){
-					if(approximately(direction, Vector3.right)) {
-						// move right
-						tryMove();
-					} else {
-						// turn right
-						turns++;
-						turnRight ();
-					}
+                    // turn right
+                    turnRight();
+                    // move right
+                    tryMove();
+
 				}
 			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
 				if(!timedOut){
-					if(approximately(direction, Vector3.left)) {
-						// move left
-						tryMove();
-					} else {
-						// turn left
-						turns++;
-						turnLeft ();
-					}
+                    // turn left
+                    turnLeft();
+                    // move left
+                    tryMove();
+
 				}
 			}
 		}
