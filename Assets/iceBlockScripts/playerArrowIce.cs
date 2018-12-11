@@ -74,8 +74,8 @@ public class playerArrowIce : MonoBehaviour {
 	private float session_time; // time spent in all games combined
 	private float sessionStart_time;
 
-	/* PLAYER LOCATION DATA */
-	/*
+    /* PLAYER LOCATION DATA */
+    /*
 	private int left_squares_player;
 	private int right_squares_player;
 	private int top_squares_player;
@@ -89,8 +89,14 @@ public class playerArrowIce : MonoBehaviour {
 	private List<string> squares_explored_player_list_store;
 	*/
 
+    // added by Jinyuan
+    private Sprite upSprite;
+    private Sprite downSprite;
+    private Sprite leftSprite;
+    private Sprite rightSprite;
+    private SpriteRenderer spriteRenderer;
 
-	private string pathTrace;
+    private string pathTrace;
 
 	//write to database
 	string resultStr;
@@ -112,6 +118,13 @@ public class playerArrowIce : MonoBehaviour {
         {
             dataCollector = collectorObj.GetComponent<DataCollector>();
         }
+        // added by Jinyuan
+        upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
+        downSprite = Resources.Load<Sprite>("player_astronaut/player-down");
+        leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
+        rightSprite = Resources.Load<Sprite>("player_astronaut/player-right");
+        spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+
         direction = Vector3.right;
 		prevMoveDir = direction;
 		right = new Vector3(0,0,270);
@@ -437,40 +450,44 @@ public class playerArrowIce : MonoBehaviour {
     // TODO: change all these to change the sprite rather than rotate it
 	public void turnDown(){
 		direction = Vector3.down;
-		transform.rotation = Quaternion.Euler(down);
+		//transform.rotation = Quaternion.Euler(down); by Jinyuan
 		predictedSquare.x = square.x + 1;
 		predictedSquare.y = square.y;
+        spriteRenderer.sprite = downSprite; //by Jinyuan
 
-	}
+    }
 
-	public void turnUp(){
+    public void turnUp(){
 		direction = Vector3.up;
-		transform.rotation = Quaternion.Euler(up);
+		// transform.rotation = Quaternion.Euler(up);
 		predictedSquare.x = square.x - 1;
 		predictedSquare.y = square.y;
+        spriteRenderer.sprite = upSprite;
 
-	}
+    }
 
-	public void turnLeft(){
+    public void turnLeft(){
 		direction = Vector3.left;
-		transform.rotation = Quaternion.Euler(left);
+		//transform.rotation = Quaternion.Euler(left);
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y - 1;
+        spriteRenderer.sprite = leftSprite;
 
-	}
+    }
 
-	public void turnRight(){
+    public void turnRight(){
 		direction = Vector3.right;
-		transform.rotation = Quaternion.Euler(right);
+		//transform.rotation = Quaternion.Euler(right);
 		predictedSquare.x = square.x;
 		predictedSquare.y = square.y + 1;
+        spriteRenderer.sprite = rightSprite;
 
-	}
+    }
 
-	// logs end game data, increments resets, and saves results to database
-	// only when "Play Again? Yes" button is clicked
+    // logs end game data, increments resets, and saves results to database
+    // only when "Play Again? Yes" button is clicked
     // TODO - get rid of this. Replace with victory message saying you completed the puzzle and got the key fragment, load start room
-	public void newGame() {
+    public void newGame() {
 		plays++;
 		reset();
 		if(timer != null){
@@ -532,12 +549,14 @@ public class playerArrowIce : MonoBehaviour {
 		transform.position = startPosition;
 		square = new Vector2(square_store.x, square_store.y);
 		predictedSquare = new Vector2(predictedSquare_store.x, predictedSquare_store.y);
-		direction = Vector3.right;
+        /**direction = Vector3.right;  by Jinyuan
 		prevMoveDir = direction;
-		transform.rotation = Quaternion.Euler(right);
+		transform.rotation = Quaternion.Euler(right);**/ 
+        direction = Vector3.up;
+        transform.rotation = Quaternion.Euler(up);
 
-		//Data collection variables
-		actions = 0;
+        //Data collection variables
+        actions = 0;
 		moves = 0;
 		turns = 0;
 		pathTurns = 0;
