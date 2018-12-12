@@ -286,7 +286,7 @@ public class playerArrowIce : MonoBehaviour {
 		*/
 
 		//Victory UI variables
-		yes = GameObject.Find ("Yes").GetComponent<Button>();
+		//yes = GameObject.Find ("Yes").GetComponent<Button>();
 		no = GameObject.Find ("No").GetComponent<Button>();
 		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
@@ -359,9 +359,9 @@ public class playerArrowIce : MonoBehaviour {
 		victoryPanel.enabled = true;
 		victoryText.enabled = true;
 
-		yes.GetComponent<Image>().enabled = true;
-		yes.interactable = true;
-		yes.transform.Find("YesText").GetComponent<Text>().enabled = true;
+		//yes.GetComponent<Image>().enabled = true;
+		//yes.interactable = true;
+		//yes.transform.Find("YesText").GetComponent<Text>().enabled = true;
 
 		no.GetComponent<Image>().enabled = true;
 		no.interactable = true;
@@ -376,9 +376,9 @@ public class playerArrowIce : MonoBehaviour {
 		victoryPanel.enabled = false;
 		victoryText.enabled = false;
 
-		yes.GetComponent<Image>().enabled = false;
-		yes.interactable = false;
-		yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
+		//yes.GetComponent<Image>().enabled = false;
+		//yes.interactable = false;
+		//yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
 
 		no.GetComponent<Image>().enabled = false;
 		no.interactable = false;
