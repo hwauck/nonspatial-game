@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class DataCollector : MonoBehaviour {
-
+    private static string lastScene;
     private static DataCollector instance;
 
     // overall variables
@@ -108,6 +108,30 @@ public class DataCollector : MonoBehaviour {
     {
         Debug.Log("Finished Loading Scene " + scene.name);
         AddNewAttempt(scene.name);
+
+        // detect if the player has finished any games, if so, close the door 
+        lastScene = playerArrowIce.sceneName;
+        if (lastScene == "ice")
+            GameObject.Find("ToIce").SetActive(false);
+        else if (lastScene == "ice_2")
+            GameObject.Find("ToIce2").SetActive(false);
+        else if (lastScene == "ice_3")
+            GameObject.Find("ToIce3").SetActive(false);
+        else if (lastScene == "ice_4")
+            GameObject.Find("ToIce4").SetActive(false);
+        else if (lastScene == "ice_5")
+            GameObject.Find("ToIce5").SetActive(false);
+        else if (lastScene == "ice_timed")
+            GameObject.Find("ToTimedIce").SetActive(false);
+        else if (lastScene == "tile")
+            GameObject.Find("ToTile1").SetActive(false);
+        else if (lastScene == "tile2")
+            GameObject.Find("ToTile2").SetActive(false);
+        else if (lastScene == "tile3")
+            GameObject.Find("ToTile3").SetActive(false);
+        else if (lastScene == "tileHard")
+            GameObject.Find("ToTileHard").SetActive(false);
+
     }
 
     // needs to be called every time player resets or runs of out of time. Is automatically called each time a new level is entered
@@ -149,7 +173,9 @@ public class DataCollector : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         getCurrentAttempt().attemptTime += Time.deltaTime;
-	}
+        
+
+    }
 
 
 

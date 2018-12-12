@@ -89,7 +89,6 @@ public class playerArrowIce : MonoBehaviour {
 	private List<string> squares_explored_player_list_store;
 	*/
 
-    // added by Jinyuan
     private Sprite upSprite;
     private Sprite downSprite;
     private Sprite leftSprite;
@@ -98,6 +97,10 @@ public class playerArrowIce : MonoBehaviour {
 
     private string pathTrace;
 
+    public AudioClip musicClip;
+    public AudioSource vicJingle;
+    //Scene currentScene;
+    public static string sceneName;
 	//write to database
 	string resultStr;
 
@@ -112,13 +115,15 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        vicJingle.clip = musicClip;
+
         //resultStr = "NEW_GAME,ice,";
         GameObject collectorObj = GameObject.Find("DataCollector");
         if (collectorObj != null)
         {
             dataCollector = collectorObj.GetComponent<DataCollector>();
         }
-        // added by Jinyuan
+
         upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
         downSprite = Resources.Load<Sprite>("player_astronaut/player-down");
         leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
@@ -450,10 +455,10 @@ public class playerArrowIce : MonoBehaviour {
     // TODO: change all these to change the sprite rather than rotate it
 	public void turnDown(){
 		direction = Vector3.down;
-		//transform.rotation = Quaternion.Euler(down); by Jinyuan
+		//transform.rotation = Quaternion.Euler(down); 
 		predictedSquare.x = square.x + 1;
 		predictedSquare.y = square.y;
-        spriteRenderer.sprite = downSprite; //by Jinyuan
+        spriteRenderer.sprite = downSprite; 
 
     }
 
@@ -513,7 +518,7 @@ public class playerArrowIce : MonoBehaviour {
 		//resultStr += "OUTCOME,RESET,NEW_ATTEMPT,ice,";
 	}
 
-	// only when "I'm done playing" button is clicked
+	// only when "Back to Main room" button is clicked
 	// (end game data has not yet been logged)
     // this ends the whole game and takes player to next part of pilot study
     // TODO - this should only happen when player presses C key - get rid of this button in each level
@@ -529,7 +534,25 @@ public class playerArrowIce : MonoBehaviour {
             Debug.Log("Warning: DataCollector not found in scene.");
         }
         SceneManager.LoadScene("start room");
-   	}
+       }
+
+    public void buttonWin()
+    {
+        logEndGameData();
+
+        if (dataCollector != null)
+        {
+            dataCollector.saveAllData();
+        }
+        else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+        sceneName = SceneManager.GetActiveScene().name; // get the current scene's name so that 
+        // we can use it in the start room for closing the door to this scene
+        SceneManager.LoadScene("start room");
+
+    }
 
     //called by trigger event when player steps on the stairs/door tile
     public void leaveRoom()
@@ -549,7 +572,7 @@ public class playerArrowIce : MonoBehaviour {
 		transform.position = startPosition;
 		square = new Vector2(square_store.x, square_store.y);
 		predictedSquare = new Vector2(predictedSquare_store.x, predictedSquare_store.y);
-        /**direction = Vector3.right;  by Jinyuan
+        /**direction = Vector3.right;
 		prevMoveDir = direction;
 		transform.rotation = Quaternion.Euler(right);**/ 
         direction = Vector3.up;
@@ -874,7 +897,8 @@ public class playerArrowIce : MonoBehaviour {
                 logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
-				displayOptions();
+                vicJingle.Play();
+                displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				if(!timedOut) {
                     // turn down
