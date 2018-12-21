@@ -26,8 +26,8 @@ public class playerArrowTile : MonoBehaviour {
 	private IList<string> obstacles; // all rock positions plus places player has already explored
 	public string[] initialObstacles;
 
-	// UI for playing a new game
-	private Button yes;
+    // UI for playing a new game
+    // private Button yes;
 	private Button no;
 	private Image victoryPanel;
 	private Text victoryText;
@@ -77,6 +77,9 @@ public class playerArrowTile : MonoBehaviour {
     private SpriteRenderer spriteRenderer;
     private Color boardColor;
 
+    public AudioClip musicClip_tile;
+    public AudioSource vicJingle_tile;
+
     void Awake() {
 		victorious = false;
 		startTime = Time.time;
@@ -88,6 +91,8 @@ public class playerArrowTile : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        vicJingle_tile.clip = musicClip_tile;
+
         GameObject collectorObj = GameObject.Find("DataCollector");
         if (collectorObj != null)
         {
@@ -136,7 +141,7 @@ public class playerArrowTile : MonoBehaviour {
 	
 
 		//Victory UI variables
-		yes = GameObject.Find ("Yes").GetComponent<Button>();
+		// yes = GameObject.Find ("Yes").GetComponent<Button>();
 		no = GameObject.Find ("No").GetComponent<Button>();
 		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
@@ -202,9 +207,9 @@ public class playerArrowTile : MonoBehaviour {
 		victoryPanel.enabled = true;
 		victoryText.enabled = true;
 
-		yes.GetComponent<Image>().enabled = true;
+		/**yes.GetComponent<Image>().enabled = true;
 		yes.interactable = true;
-		yes.transform.Find("YesText").GetComponent<Text>().enabled = true;
+		yes.transform.Find("YesText").GetComponent<Text>().enabled = true;**/
 
 		no.GetComponent<Image>().enabled = true;
 		no.interactable = true;
@@ -216,9 +221,9 @@ public class playerArrowTile : MonoBehaviour {
 		victoryPanel.enabled = false;
 		victoryText.enabled = false;
 
-		yes.GetComponent<Image>().enabled = false;
+		/**yes.GetComponent<Image>().enabled = false;
 		yes.interactable = false;
-		yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
+		yes.transform.Find("YesText").GetComponent<Text>().enabled = false;**/
 
 		no.GetComponent<Image>().enabled = false;
 		no.interactable = false;
@@ -346,9 +351,24 @@ public class playerArrowTile : MonoBehaviour {
         SceneManager.LoadScene("start room");
 	}
 
-	// only when "Play Again? No" button is clicked
-	// (end game data has already been logged)
-	public void saveAndQuit() {
+    // create ButtonWin method to remember current room number when victory
+    public void buttonWin()
+    {
+        if (dataCollector != null)
+        {
+            dataCollector.saveAllData();
+        }
+        else
+        {
+            Debug.Log("Warning: DataCollector not found in scene.");
+        }
+        playerArrowIce.sceneName = SceneManager.GetActiveScene().name; // get the current scene's name so that 
+        //SceneManager.LoadScene("postgame_survey");
+        SceneManager.LoadScene("start room");
+    }
+    // only when "Play Again? No" button is clicked
+    // (end game data has already been logged)
+    public void saveAndQuit() {
 		//resultStr += "END_SESSION,no,";
 		//TODO:Cheryl temporarily comment this part for test
 		//SceneManager.LoadScene("postgame_survey");
@@ -479,16 +499,16 @@ public class playerArrowTile : MonoBehaviour {
 				//resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
 				//Cheryl
-				yes.onClick.AddListener(newGame);
+				// yes.onClick.AddListener(newGame);
 				no.onClick.AddListener(saveAndQuit);
-
-				// if(yes.onClick){
-				// 	newGame();
-				// }
-				// else if{
-				//
-				// }
-			} else if (Input.GetKeyDown (KeyCode.DownArrow)) {
+                vicJingle_tile.Play(); // play victory music
+                // if(yes.onClick){
+                // 	newGame();
+                // }
+                // else if{
+                //
+                // }
+            } else if (Input.GetKeyDown (KeyCode.DownArrow)) {
 				turnDown ();
 				tryMove();
 			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
