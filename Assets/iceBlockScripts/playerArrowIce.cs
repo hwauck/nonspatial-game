@@ -146,6 +146,7 @@ public class playerArrowIce : MonoBehaviour {
 
 		foreach(string s in victorySquare){
 			victorySquare_tmp.Add(s);
+            print("Added " + s + " to victorySquare_tmp");
 		}
 
 		//Data collection variables
@@ -609,6 +610,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	}
 
+    // this should only be checked after an ice block's location changes, not during every update
 	private bool victory() {
 
 		foreach(string s in victorySquare_tmp){
@@ -885,6 +887,10 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+        foreach(string s in victorySquare)
+        {
+            print("Victory Square: " + s);
+        }
 		if(!victorious) {
 			if(victory()) {
                 if (dataCollector != null)
