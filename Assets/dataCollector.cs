@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
 public class DataCollector : MonoBehaviour {
-    private static string lastScene;
+    private List<string> completedScenes;
     private static DataCollector instance;
 
     // overall variables
@@ -84,6 +84,8 @@ public class DataCollector : MonoBehaviour {
 
         attempts = new List<Attempt>();
 
+        completedScenes = new List<string>();
+
 	}
 
 	// Use this for initialization
@@ -110,27 +112,59 @@ public class DataCollector : MonoBehaviour {
         AddNewAttempt(scene.name);
 
         // detect if the player has finished any games, if so, close the door 
-        lastScene = playerArrowIce.sceneName;
-        if (lastScene == "ice")
-            GameObject.Find("ToIce").SetActive(false);
-        else if (lastScene == "ice_2")
-            GameObject.Find("ToIce2").SetActive(false);
-        else if (lastScene == "ice_3")
-            GameObject.Find("ToIce3").SetActive(false);
-        else if (lastScene == "ice_4")
-            GameObject.Find("ToIce4").SetActive(false);
-        else if (lastScene == "ice_5")
-            GameObject.Find("ToIce5").SetActive(false);
-        else if (lastScene == "ice_timed")
-            GameObject.Find("ToTimedIce").SetActive(false);
-        else if (lastScene == "tile")
-            GameObject.Find("ToTile1").SetActive(false);
-        else if (lastScene == "tile2")
-            GameObject.Find("ToTile2").SetActive(false);
-        else if (lastScene == "tile3")
-            GameObject.Find("ToTile3").SetActive(false);
-        else if (lastScene == "tileHard")
-            GameObject.Find("ToTileHard").SetActive(false);
+        if(!completedScenes.Contains(playerArrowIce.sceneName))
+            completedScenes.Add(playerArrowIce.sceneName);
+
+        if (completedScenes.Contains("ice")){
+            GameObject go = GameObject.Find("ToIce");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("ice_2")){
+            GameObject go = GameObject.Find("ToIce2");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("ice_3")){
+            GameObject go = GameObject.Find("ToIce3");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("ice_4")){
+            GameObject go = GameObject.Find("ToIce4");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("ice_5")){
+            GameObject go = GameObject.Find("ToIce5");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("ice_timed")){
+            GameObject go = GameObject.Find("ToTimedIce");
+            if(go != null)
+                go.SetActive(false);
+        }
+        else if (completedScenes.Contains("tile")){
+            GameObject go = GameObject.Find("ToTile1");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("tile2")){
+            GameObject go = GameObject.Find("ToTile2");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("tile3")){
+            GameObject go = GameObject.Find("ToTile3");
+            if(go != null)
+                go.SetActive(false);
+        }
+        if (completedScenes.Contains("tileHard")){
+            GameObject go = GameObject.Find("ToTileHard");
+            if(go != null)
+                go.SetActive(false);
+        }
 
     }
 

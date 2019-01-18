@@ -889,7 +889,7 @@ public class playerArrowIce : MonoBehaviour {
 	void Update () {
         foreach(string s in victorySquare)
         {
-            print("Victory Square: " + s);
+            //print("Victory Square: " + s);
         }
 		if(!victorious) {
 			if(victory()) {
