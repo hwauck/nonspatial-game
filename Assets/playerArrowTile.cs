@@ -496,6 +496,8 @@ public class playerArrowTile : MonoBehaviour {
                     Debug.Log("Warning: DataCollector not found in scene (Ignore if running this scene in isolation).");
                 }
                 victories++;
+                dataCollector.AddKey(); // add one to the counts of total key fragments obtained
+                Debug.Log("added a Key!!!!!!!!!!!!!");
 				//resultStr +="OUTCOME,VICTORY,";
 				displayOptions();
 				//Cheryl
