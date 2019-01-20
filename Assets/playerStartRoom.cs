@@ -131,7 +131,7 @@ public class playerStartRoom : MonoBehaviour {
         } else if (otherCollider.gameObject.name.Equals("ToIce5"))
         {
             SceneManager.LoadScene("ice_5");
-        } else if (otherCollider.gameObject.name.Equals("ToTimedIce"))
+        } else if (otherCollider.gameObject.name.Equals("ToTimedIce") && popupText2.isUnlocked)  // unlock IceTimed only if the player has found 9 key fragments
         {
             SceneManager.LoadScene("ice_timed");
         } else if (otherCollider.gameObject.name.Equals("ToTile1"))
