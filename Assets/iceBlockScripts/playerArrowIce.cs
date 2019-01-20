@@ -903,6 +903,8 @@ public class playerArrowIce : MonoBehaviour {
                 logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
+                dataCollector.AddKey(); // add one to the counts of total key fragments obtained
+                Debug.Log("added a Key!!!!!!!!!!!!!");
                 vicJingle.Play();
                 displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
