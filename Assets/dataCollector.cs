@@ -25,6 +25,8 @@ public class DataCollector : MonoBehaviour {
     //level-specific variables
     private List<Attempt> attempts;
 
+    private int keysobtained = 0; // keep track of how many key fragments the player has won - jinyuan
+
     private class Attempt
     {
         public string level; // the name of the current level
@@ -211,7 +213,13 @@ public class DataCollector : MonoBehaviour {
 
     }
 
+    public void AddKey(){
+        keysobtained += 1;
+    }
 
+    public int ReportKeyNum(){
+        return keysobtained;
+    }
 
 	public void saveAllData() {
         // setting these to zero again so this can recalculate and save totals multiple times during a game
