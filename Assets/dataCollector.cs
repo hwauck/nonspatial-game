@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class DataCollector : MonoBehaviour {
     private List<string> completedScenes;
@@ -26,6 +27,12 @@ public class DataCollector : MonoBehaviour {
     private List<Attempt> attempts;
 
     private int keysobtained = 0; // keep track of how many key fragments the player has won - jinyuan
+
+    public FadeScreen screenFader;
+
+    public Text demoFinishedText;
+
+    public Text demoFinishedAltText;
 
     private class Attempt
     {
@@ -210,7 +217,55 @@ public class DataCollector : MonoBehaviour {
     void Update () {
         getCurrentAttempt().attemptTime += Time.deltaTime;
         
+        if(Input.GetKeyDown(KeyCode.P)){
+            Debug.Log("End Gameplay Session");
 
+            doFadeToDemoFinished(3f, true);
+        }
+
+    }
+
+    public void doFadeToDemoFinished(float seconds, bool playerInitiated)
+    {
+        /*
+        if(playerInitiated)
+        {
+            expDataManager.setOutcome("quit");
+        } else
+        {
+            expDataManager.setOutcome("finishedDemo");
+        }
+        
+        gameQuit.Invoke(); // sends out broadcast that game is over; any other scripts can perform actions based on this
+        disablePlayerControl();
+        StopAllCoroutines();
+        timer.stopTimer();
+        timer.stopMusic();
+        ConversationController.Disable();
+        errorPanel.alpha = 0;
+        countdownPanel.alpha = 0;
+        expDataManager.setPauseGameplay(true);
+        */
+        StartCoroutine(fadeToDemoFinished(seconds, playerInitiated));
+    }
+
+    private IEnumerator fadeToDemoFinished(float seconds, bool playerInitiated)
+    {
+        screenFader.fadeOut(seconds);
+        yield return new WaitForSeconds(seconds);
+
+        if(playerInitiated)
+        {
+            demoFinishedAltText.enabled = true;
+            yield return new WaitForSeconds(3f);
+            // load next page, however that's done
+            //Hello();
+
+        } else
+        {
+            demoFinishedText.enabled = true;
+            // load next page, however that's done
+        }
     }
 
     public void AddKey(){
