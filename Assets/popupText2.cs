@@ -21,7 +21,7 @@ public class popupText2 : MonoBehaviour {
         Debug.Log("entered");
         if (other.CompareTag("Player"))
         {
-            if(dataCollector.ReportKeyNum() != 9){
+            if(dataCollector.ReportKeyNum() != 2){
                 text1.SetActive(true);
             }
             else{
@@ -31,6 +31,7 @@ public class popupText2 : MonoBehaviour {
 
         }
     }
+
     void OnTriggerExit2D(Collider2D other)
     {
         Debug.Log("out");
