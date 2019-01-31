@@ -259,11 +259,13 @@ public class DataCollector : MonoBehaviour {
             demoFinishedAltText.enabled = true;
             yield return new WaitForSeconds(3f);
             // load next page, however that's done
+            saveAllData();
             //Hello();
 
         } else
         {
             demoFinishedText.enabled = true;
+            saveAllData();
             // load next page, however that's done
         }
     }
