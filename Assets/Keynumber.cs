@@ -23,13 +23,13 @@ public class Keynumber : MonoBehaviour {
 	void Update () {
         num = dataCollector.ReportKeyNum(); 
         if(num != 0 ){
-            if(num == 2){    // change "9" in Keynumber.cs and popuptText2.cs
+            if(num == 9){    // change "9" in Keynumber.cs and popuptText2.cs
                 if(haspoped == false){
                     popmessage.SetActive(true);
                     mytimer += Time.deltaTime;
                 }
                 keynum.text = "Keys: 1"; 
-                if(mytimer > 4.0f){    // wait three second then make the message disappear
+                if(mytimer > 4.0f){    // wait four second then make the message disappear
                     popmessage.SetActive(false);
                     mytimer = 0f;
                     haspoped = true;
