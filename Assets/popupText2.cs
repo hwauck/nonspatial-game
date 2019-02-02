@@ -21,7 +21,7 @@ public class popupText2 : MonoBehaviour {
         Debug.Log("entered");
         if (other.CompareTag("Player"))
         {
-            if(dataCollector.ReportKeyNum() != 2){
+            if(dataCollector.ReportKeyNum() != 9){
                 text1.SetActive(true);
             }
             else{
