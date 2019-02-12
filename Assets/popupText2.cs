@@ -41,3 +41,5 @@ public class popupText2 : MonoBehaviour {
             text2.SetActive(false);
         }
     }}
+    
+    

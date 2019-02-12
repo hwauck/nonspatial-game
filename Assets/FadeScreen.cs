@@ -8,7 +8,6 @@ public class FadeScreen : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-		
 	}
 
     public void fadeOut(float timer)
@@ -19,6 +18,7 @@ public class FadeScreen : MonoBehaviour {
     public void fadeIn(float timer)
     {
         StartCoroutine(fader(timer, Fade.In));
+
     }
 
     IEnumerator fader(float timer, Fade fadeType)

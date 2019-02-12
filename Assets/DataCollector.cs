@@ -26,13 +26,16 @@ public class DataCollector : MonoBehaviour {
     //level-specific variables
     private List<Attempt> attempts;
 
-    private int keysobtained = 0; // keep track of how many key fragments the player has won - jinyuan
+    private int keysobtained = 0; // keep track of how many key fragments the player has won 
+
+    private static bool pressedP = false;
 
     public FadeScreen screenFader;
 
     public Text demoFinishedText;
 
     public Text demoFinishedAltText;
+
 
     private class Attempt
     {
@@ -57,7 +60,7 @@ public class DataCollector : MonoBehaviour {
         }
     }
 
-	void Awake () {
+	protected void Awake () {
         if(instance == null)
         {
             instance = this;
@@ -93,14 +96,12 @@ public class DataCollector : MonoBehaviour {
 
         attempts = new List<Attempt>();
 
-        completedScenes = new List<string>();
-
+        completedScenes = new List<string>(); 
 	}
 
 	// Use this for initialization
 	void Start () {
-	
-	}
+    }
 
     private void OnEnable()
     {
@@ -176,7 +177,6 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
         }
-
     }
 
     // needs to be called every time player resets or runs of out of time. Is automatically called each time a new level is entered
@@ -218,9 +218,9 @@ public class DataCollector : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         getCurrentAttempt().attemptTime += Time.deltaTime;
-        
         if(Input.GetKeyDown(KeyCode.P)){
             Debug.Log("End Gameplay Session");
+            pressedP = true;
 
             doFadeToDemoFinished(3f, true);
         }
