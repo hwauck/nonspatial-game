@@ -115,6 +115,8 @@ public class DataCollector : MonoBehaviour {
     // delegate function to detect when a new scene is loaded.
     // a new Attempt is created every time a new scene is loaded, even if it's the main room
     // this is because it's easier to partition everything into attempts
+    // TODO: Don't use completedScenes and playerArrowIce.sceneName public variable
+    // Instead, just use the levelsCompleted dictionary
     private void OnLevelFinishedLoading(Scene scene, LoadSceneMode mode)
     {
         Debug.Log("Finished Loading Scene " + scene.name);
