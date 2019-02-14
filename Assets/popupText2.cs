@@ -19,16 +19,15 @@ public class popupText2 : MonoBehaviour {
     void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log("entered");
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && !DataCollector.finishedIceTimed)
         {
             if(dataCollector.ReportKeyNum() != 9){
                 text1.SetActive(true);
             }
             else{
-                isUnlocked = true;
-                text2.SetActive(true); // unlock IceTimed when the player gain all 9 other key fragments
+                isUnlocked = true;   // unlock IceTimed when the player gain all 9 other key fragments
+                text2.SetActive(true);
             }
-
         }
     }
 
@@ -41,5 +40,3 @@ public class popupText2 : MonoBehaviour {
             text2.SetActive(false);
         }
     }}
-    
-    
