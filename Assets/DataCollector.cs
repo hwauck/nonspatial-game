@@ -40,7 +40,6 @@ public class DataCollector : MonoBehaviour {
     public static bool finishedIce, finishedIce2, finishedIce3, finishedIce4, finishedIce5, finishedIceTimed,
     finishedTile, finishedTile2, finishedTile3, finishedTileHard;
 
-
     private class Attempt
     {
         public string level; // the name of the current level
