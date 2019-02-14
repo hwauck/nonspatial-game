@@ -36,6 +36,10 @@ public class DataCollector : MonoBehaviour {
 
     public Text demoFinishedAltText;
 
+    // public varaibles for hiding the level name texts after the player has completed the scene, default to false
+    public static bool finishedIce, finishedIce2, finishedIce3, finishedIce4, finishedIce5, finishedIceTimed,
+    finishedTile, finishedTile2, finishedTile3, finishedTileHard;
+
 
     private class Attempt
     {
@@ -113,6 +117,9 @@ public class DataCollector : MonoBehaviour {
         SceneManager.sceneLoaded -= OnLevelFinishedLoading;
     }
 
+    //finishedIce, finishedIce2, finishedIce3, finishedIce4, finishedIce5, finishedIceTimed,
+    //finishedTile, finishedTile2, finishedTile3, finishedTileHard;
+
     // delegate function to detect when a new scene is loaded.
     // a new Attempt is created every time a new scene is loaded, even if it's the main room
     // this is because it's easier to partition everything into attempts
@@ -122,7 +129,7 @@ public class DataCollector : MonoBehaviour {
     {
         Debug.Log("Finished Loading Scene " + scene.name);
         AddNewAttempt(scene.name);
-
+        GameObject hideHint;
         // detect if the player has finished any games, if so, close the door 
         if(!completedScenes.Contains(playerArrowIce.sceneName))
             completedScenes.Add(playerArrowIce.sceneName);
@@ -130,52 +137,121 @@ public class DataCollector : MonoBehaviour {
         if (completedScenes.Contains("ice")){
             GameObject go = GameObject.Find("ToIce");
             if(go != null)
-                go.SetActive(false);
+                go.SetActive(false);  
+
+            hideHint = GameObject.Find("Text ice1");   // hide level name text if the player has completed this level
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedIce = true;
+            }
         }
         if (completedScenes.Contains("ice_2")){
             GameObject go = GameObject.Find("ToIce2");
             if(go != null)
                 go.SetActive(false);
+            
+            hideHint = GameObject.Find("Text ice2");   
+            if (hideHint != null){
+                hideHint.SetActive(false);
+                finishedIce2 = true;
+            }
         }
         if (completedScenes.Contains("ice_3")){
             GameObject go = GameObject.Find("ToIce3");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text ice3");   
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedIce3 = true;
+            }
         }
         if (completedScenes.Contains("ice_4")){
             GameObject go = GameObject.Find("ToIce4");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text ice4");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedIce4 = true;
+            }
         }
         if (completedScenes.Contains("ice_5")){
             GameObject go = GameObject.Find("ToIce5");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text ice5");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedIce5 = true;
+            }
         }
         if (completedScenes.Contains("ice_timed")){
             GameObject go = GameObject.Find("ToTimedIce");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text ice timed unlocked");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedIceTimed = true;
+            }
         }
         else if (completedScenes.Contains("tile")){
             GameObject go = GameObject.Find("ToTile1");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text tile1");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedTile = true;
+            }
         }
         if (completedScenes.Contains("tile2")){
             GameObject go = GameObject.Find("ToTile2");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text tile2");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedTile2 = true;
+            }
         }
         if (completedScenes.Contains("tile3")){
             GameObject go = GameObject.Find("ToTile3");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text tile3");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedTile3 = true;
+            }
         }
         if (completedScenes.Contains("tileHard")){
             GameObject go = GameObject.Find("ToTileHard");
             if(go != null)
                 go.SetActive(false);
+
+            hideHint = GameObject.Find("Text tile hard");
+            if (hideHint != null)
+            {
+                hideHint.SetActive(false);
+                finishedTileHard = true;
+            }
         }
     }
 
@@ -278,6 +354,10 @@ public class DataCollector : MonoBehaviour {
 
     public int ReportKeyNum(){
         return keysobtained;
+    }
+
+    public Dictionary<string, bool> ListCompletedLevels(){
+        return levelsCompleted;
     }
 
 	public void saveAllData() {
