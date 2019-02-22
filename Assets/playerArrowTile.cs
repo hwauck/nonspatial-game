@@ -341,6 +341,7 @@ public class playerArrowTile : MonoBehaviour {
     public void buttonQuit() {
         if (dataCollector != null)
         {
+            dataCollector.setOutcome("left");
             dataCollector.saveAllData();
         } else
         {

@@ -16,15 +16,16 @@ public class popupText : MonoBehaviour {
         if (other.CompareTag("Player"))
         {
             // display the level names only if this level is not yet completed
-            if ((!DataCollector.finishedIce && other.CompareTag("Player") && this.gameObject.name == "text1") ||
-            (!DataCollector.finishedIce2 && other.CompareTag("Player") && this.gameObject.name == "text2") ||
-            (!DataCollector.finishedIce3 && other.CompareTag("Player") && this.gameObject.name == "text3") ||
-            (!DataCollector.finishedIce4 && other.CompareTag("Player") && this.gameObject.name == "text4") ||
-            (!DataCollector.finishedIce5 && other.CompareTag("Player") && this.gameObject.name == "text5") ||
-            (!DataCollector.finishedTile && other.CompareTag("Player") && this.gameObject.name == "text tl1") ||
-            (!DataCollector.finishedTile2 && other.CompareTag("Player") && this.gameObject.name == "text tl2") ||
-            (!DataCollector.finishedTile3 && other.CompareTag("Player") && this.gameObject.name == "text tl3") ||
-            (!DataCollector.finishedTileHard && other.CompareTag("Player") && this.gameObject.name == "text tl hard"))
+            if ((!DataCollector.finishedIce && this.gameObject.name == "text_Ice") ||
+            (!DataCollector.finishedIce2 && this.gameObject.name == "text_Ice2") ||
+            (!DataCollector.finishedIce3 && this.gameObject.name == "text_Ice3") ||
+            (!DataCollector.finishedIce4 && this.gameObject.name == "text_Ice4") ||
+            (!DataCollector.finishedIce5 && this.gameObject.name == "text_Ice5") ||
+            (!DataCollector.finishedIceTimed && this.gameObject.name == "text_IceTimed") ||
+            (!DataCollector.finishedTile && this.gameObject.name == "text_Tile") ||
+            (!DataCollector.finishedTile2 && this.gameObject.name == "text_Tile2") ||
+            (!DataCollector.finishedTile3 && this.gameObject.name == "text_Tile3") ||
+            (!DataCollector.finishedTileHard && this.gameObject.name == "text_TileHard"))
             {
                 text1.SetActive(true);
             }

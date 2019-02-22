@@ -3,10 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Runtime.InteropServices;
+
 
 public class DataCollector : MonoBehaviour {
     private List<string> completedScenes;
     private static DataCollector instance;
+
+    [DllImport("__Internal")]
+    private static extern void sendToDB(string playerData);
 
     // overall variables
     private float sessionTime; // how long the player spent with the entire game
@@ -331,19 +336,24 @@ public class DataCollector : MonoBehaviour {
         screenFader.fadeOut(seconds);
         yield return new WaitForSeconds(seconds);
 
-        if(playerInitiated)
+        string allData;
+        if (playerInitiated)
         {
             demoFinishedAltText.enabled = true;
             yield return new WaitForSeconds(3f);
-            // load next page, however that's done
-            saveAllData();
-            //Hello();
+
+            allData = saveAllData();
+            // This is where we send data to the server - use Javascript library added to project
+            sendToDB(allData);
 
         } else
         {
             demoFinishedText.enabled = true;
-            saveAllData();
-            // load next page, however that's done
+            yield return new WaitForSeconds(3f);
+
+            allData = saveAllData();
+            // This is where we send data to the server - use Javascript library added to project
+            sendToDB(allData);
         }
     }
 
@@ -359,7 +369,7 @@ public class DataCollector : MonoBehaviour {
         return levelsCompleted;
     }
 
-	public void saveAllData() {
+	public string saveAllData() {
         // setting these to zero again so this can recalculate and save totals multiple times during a game
         sessionTime = 0;
         levelOrder = "";
@@ -423,7 +433,7 @@ public class DataCollector : MonoBehaviour {
         }
 
 		Debug.Log(allData);
-        // This is where we send data to the server - use Javascript library added to project
+        return allData;
 
 	}
 

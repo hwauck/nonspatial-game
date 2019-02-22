@@ -8,6 +8,7 @@ public class popupText2 : MonoBehaviour {
     public GameObject text2;
     private DataCollector dataCollector;
     public static bool isUnlocked = false;
+    public bool debugMode; // can make the timed ice level unlocked to start with for testing purposes
 
     void Start()
     {
@@ -21,7 +22,7 @@ public class popupText2 : MonoBehaviour {
         Debug.Log("entered");
         if (other.CompareTag("Player") && !DataCollector.finishedIceTimed)
         {
-            if(dataCollector.ReportKeyNum() != 9){
+            if(dataCollector.ReportKeyNum() != 9 && !debugMode){
                 text1.SetActive(true);
             }
             else{

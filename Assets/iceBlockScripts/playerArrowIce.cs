@@ -521,14 +521,12 @@ public class playerArrowIce : MonoBehaviour {
 
 	// only when "Back to Main room" button is clicked
 	// (end game data has not yet been logged)
-    // this ends the whole game and takes player to next part of pilot study
-    // TODO - this should only happen when player presses C key - get rid of this button in each level
 	public void buttonQuit() {
 		logEndGameData();
 
-        // For testing purposes - TODO will need to make these happen when player presses C key instead in future
         if (dataCollector != null)
         {
+            dataCollector.setOutcome("left");
             dataCollector.saveAllData();
         } else
         {
