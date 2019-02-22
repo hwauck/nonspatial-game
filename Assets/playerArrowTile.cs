@@ -104,7 +104,7 @@ public class playerArrowTile : MonoBehaviour {
         leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
         rightSprite = Resources.Load<Sprite>("player_astronaut/player-right");
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
-        boardColor = new Color(226, 100, 44);
+        boardColor = new Color(0.8863f, 0.3922f, 0.1725f); //RGB value: (226, 100, 44)
 
         boardSquares[PLAYER_START_INDEX].GetComponent<SpriteRenderer>().color = Color.yellow;
 		direction = Vector3.up;
@@ -389,7 +389,7 @@ public class playerArrowTile : MonoBehaviour {
 		direction = Vector3.up;
 		transform.rotation = Quaternion.Euler(up);
 
-		//change all board squares back to white (except starting square)
+		//change all board squares back to orange (except starting square)
 		for(int i = 0; i < boardSquares.Length; i++) {
 				boardSquares[i].GetComponent<SpriteRenderer>().color = boardColor;
 		}
