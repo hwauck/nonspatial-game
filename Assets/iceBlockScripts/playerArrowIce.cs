@@ -568,7 +568,7 @@ public class playerArrowIce : MonoBehaviour {
     }
 
 	public void reset() {
-		transform.position = startPosition;
+		transform.localPosition = startPosition;
 		square = new Vector2(square_store.x, square_store.y);
 		predictedSquare = new Vector2(predictedSquare_store.x, predictedSquare_store.y);
         /**direction = Vector3.right;
@@ -901,8 +901,17 @@ public class playerArrowIce : MonoBehaviour {
                 logEndGameData ();
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
-                dataCollector.AddKey(); // add one to the counts of total key fragments obtained
-                Debug.Log("added a Key!!!!!!!!!!!!!");
+
+                if (dataCollector != null && timer != null) // timed level
+                {
+                    // give player the Rocket Boots?
+                    Debug.Log("Got the Rocket Boots!");
+
+                } else if (dataCollector != null && timer == null) //non-timed level
+                {
+                    dataCollector.AddKey(); // add one to the counts of total key fragments obtained
+                    Debug.Log("added a Key!!!!!!!!!!!!!");
+                }
                 vicJingle.Play();
                 displayOptions();
 			}else if (Input.GetKeyDown (KeyCode.DownArrow)) {
@@ -982,7 +991,17 @@ public class playerArrowIce : MonoBehaviour {
 		}
 	}
 
-	public void SetTimedOut (bool timedOut) {
+    public void disablePlayerControls()
+    {
+        timedOut = true;
+    }
+
+    public void enablePlayerControls()
+    {
+        timedOut = false;
+    }
+
+    public void SetTimedOut (bool timedOut) {
         if (dataCollector != null)
         {
             dataCollector.setOutcome("time");

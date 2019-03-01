@@ -243,7 +243,7 @@ public class iceBlock : MonoBehaviour {
 	}
 
 	public void reset() {
-		transform.position = startingPos;
+		transform.localPosition = startingPos;
 		square = startingSquare;
 
 		iceCantMove = 0; 	
