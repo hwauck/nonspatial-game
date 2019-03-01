@@ -143,7 +143,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);  
 
-            hideHint = GameObject.Find("Text ice1");   // hide level name text if the player has completed this level
+            hideHint = GameObject.Find("ice1_level_name");   // hide level name text if the player has completed this level
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -155,7 +155,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
             
-            hideHint = GameObject.Find("Text ice2");   
+            hideHint = GameObject.Find("ice2_level_name");   
             if (hideHint != null){
                 hideHint.SetActive(false);
                 finishedIce2 = true;
@@ -166,7 +166,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text ice3");   
+            hideHint = GameObject.Find("ice3_level_name");   
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -178,7 +178,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text ice4");
+            hideHint = GameObject.Find("ice4_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -190,7 +190,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text ice5");
+            hideHint = GameObject.Find("ice5_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -202,19 +202,19 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text ice timed unlocked");
+            hideHint = GameObject.Find("ice_timed_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
                 finishedIceTimed = true;
             }
         }
-        else if (completedScenes.Contains("tile")){
+        if (completedScenes.Contains("tile")){
             GameObject go = GameObject.Find("ToTile1");
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text tile1");
+            hideHint = GameObject.Find("tile1_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -226,7 +226,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text tile2");
+            hideHint = GameObject.Find("tile2_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -238,7 +238,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text tile3");
+            hideHint = GameObject.Find("tile3_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
@@ -250,7 +250,7 @@ public class DataCollector : MonoBehaviour {
             if(go != null)
                 go.SetActive(false);
 
-            hideHint = GameObject.Find("Text tile hard");
+            hideHint = GameObject.Find("tile_hard_level_name");
             if (hideHint != null)
             {
                 hideHint.SetActive(false);
