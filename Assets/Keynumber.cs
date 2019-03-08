@@ -10,8 +10,8 @@ public class Keynumber : MonoBehaviour {
     public GameObject popmessage;
     private float mytimer;
     private bool haspoped;
-    private Image keyCounterPanel;
-    private Image messagePanel;
+    public Image keyCounterPanel;
+    public Image messagePanel;
 	// Use this for initialization
 	void Start () {
         dataCollector = GameObject.Find("DataCollector").GetComponent<DataCollector>();
@@ -20,8 +20,6 @@ public class Keynumber : MonoBehaviour {
         mytimer = 0f;
         haspoped = false;
 
-        keyCounterPanel = GameObject.Find("keycounterBox").GetComponent<Image>();
-        messagePanel = GameObject.Find("messageBox").GetComponent<Image>();
 	}
 	
 	// Update is called once per frame
@@ -44,7 +42,7 @@ public class Keynumber : MonoBehaviour {
                 }
 
             }else{
-                keynum.text = "Key fragments: " + num;
+                keynum.text = "Key fragments: " + num + "/9";
 
             }
         }

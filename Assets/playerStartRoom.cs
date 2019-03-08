@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class playerStartRoom : MonoBehaviour {
 
@@ -19,6 +20,22 @@ public class playerStartRoom : MonoBehaviour {
     private Sprite rightSprite;
     private SpriteRenderer spriteRenderer;
 
+    public CanvasGroup introBox;
+    public Text introText;
+    public FadeScreen screenFader;
+    public Image fadePanelImage;
+
+    private AudioClip doorOpen;
+    private AudioClip doorClose;
+    private AudioClip doorUnlock;
+    private AudioClip gameMusic;
+
+    public AudioSource audioSource;
+    public AudioSource musicSource;
+
+
+    private bool controlsDisabled;
+
     // Use this for initialization
     void Start () {
         dataCollector = GameObject.Find("DataCollector").GetComponent<DataCollector>();
@@ -31,6 +48,58 @@ public class playerStartRoom : MonoBehaviour {
         leftSprite = Resources.Load<Sprite>("player_astronaut/player-left");
         rightSprite = Resources.Load<Sprite>("player_astronaut/player-right");
         spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+
+        doorOpen = Resources.Load<AudioClip>("Audio/DoorOpen");
+        doorClose = Resources.Load<AudioClip>("Audio/CloseDoor");
+        doorUnlock = Resources.Load<AudioClip>("Audio/UnlockDoor");
+        gameMusic = Resources.Load<AudioClip>("Audio/Gymnopedie");
+
+
+        if(dataCollector.getNumSceneChanges() > 1)
+        {
+            controlsDisabled = false;
+            fadePanelImage.enabled = false;
+            audioSource.PlayOneShot(doorClose);
+        } else
+        {
+            controlsDisabled = true;
+            StartCoroutine(intro());
+        }
+
+    }
+
+    IEnumerator FadeAudioToNew(float timer)
+    {
+        float start, end;
+        start = 1.0F;
+        end = 0.0F;
+        float i = 0.0F;
+        float step = 1.0F / timer;
+
+        while (i <= 1.0F)
+        {
+            i += step * Time.deltaTime;
+            musicSource.volume = Mathf.Lerp(start, end, i);
+            yield return new WaitForSeconds(step * Time.deltaTime);
+        }
+        musicSource.Stop();
+        musicSource.clip = gameMusic;
+        musicSource.volume = 1;
+        musicSource.Play();
+    }
+
+    IEnumerator intro()
+    {
+        introBox.alpha = 1;
+        yield return new WaitForSeconds(4f);
+        introText.text = "You wander into an abandoned warehouse. What secrets might be hidden within?";
+        yield return new WaitForSeconds(4f);
+        introBox.alpha = 0;
+        screenFader.fadeIn(2f);
+        StartCoroutine(FadeAudioToNew(2f));
+        yield return new WaitForSeconds(2f);
+
+        controlsDisabled = false;
     }
 
     private bool offScreen()
@@ -118,50 +187,92 @@ public class playerStartRoom : MonoBehaviour {
     {
         if(otherCollider.gameObject.name.Equals("ToIce"))
         {
-            SceneManager.LoadScene("ice");
+            StartCoroutine(openDoorAndLoadLevel("ice"));
         } else if (otherCollider.gameObject.name.Equals("ToIce2"))
         {
-            SceneManager.LoadScene("ice_2");
+            StartCoroutine(openDoorAndLoadLevel("ice_2"));
         } else if (otherCollider.gameObject.name.Equals("ToIce3"))
         {
-            SceneManager.LoadScene("ice_3");
+            StartCoroutine(openDoorAndLoadLevel("ice_3"));
         } else if (otherCollider.gameObject.name.Equals("ToIce4"))
         {
-            SceneManager.LoadScene("ice_4");
+            StartCoroutine(openDoorAndLoadLevel("ice_4"));
         } else if (otherCollider.gameObject.name.Equals("ToIce5"))
         {
-            SceneManager.LoadScene("ice_5");
-        } else if (otherCollider.gameObject.name.Equals("ToTimedIce") && popupText2.isUnlocked)  // unlock IceTimed only if the player has found 9 key fragments
+            StartCoroutine(openDoorAndLoadLevel("ice_5"));
+        } else if (otherCollider.gameObject.name.Equals("ToTimedIce") /* && popupText2.isUnlocked*/)  // unlock IceTimed only if the player has found 9 key fragments
         {
-            SceneManager.LoadScene("ice_timed");
+            StartCoroutine(unlockDoorAndLoadLevel("ice_timed"));
         } else if (otherCollider.gameObject.name.Equals("ToTile1"))
         {
-            SceneManager.LoadScene("tile");
+            StartCoroutine(openDoorAndLoadLevel("tile"));
         } else if (otherCollider.gameObject.name.Equals("ToTile2"))
         {
-            SceneManager.LoadScene("tile2");
+            StartCoroutine(openDoorAndLoadLevel("tile2"));
         } else if (otherCollider.gameObject.name.Equals("ToTile3"))
         {
-            SceneManager.LoadScene("tile3");
+            StartCoroutine(openDoorAndLoadLevel("tile3"));
         } else if (otherCollider.gameObject.name.Equals("ToTileHard"))
         {
-            SceneManager.LoadScene("tileHard");
+            StartCoroutine(openDoorAndLoadLevel("tileHard"));
         }
+    }
+
+    IEnumerator openDoorAndLoadLevel(string sceneName)
+    {
+        controlsDisabled = true;
+        audioSource.PlayOneShot(doorOpen);
+        while(audioSource.isPlaying)
+        {
+            yield return null;
+        }
+        controlsDisabled = false;
+        dataCollector.setOutcome("left");
+        SceneManager.LoadScene(sceneName);
+    }
+
+    IEnumerator unlockDoorAndLoadLevel(string sceneName)
+    {
+        controlsDisabled = true;
+        audioSource.PlayOneShot(doorUnlock);
+        while (audioSource.isPlaying)
+        {
+            yield return null;
+        }
+        audioSource.PlayOneShot(doorOpen);
+        while (audioSource.isPlaying)
+        {
+            yield return null;
+        }
+        controlsDisabled = false;
+        dataCollector.setOutcome("left");
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // called when gameQuit event is invoked by DataCollector
+    public void gameQuit()
+    {
+        controlsDisabled = true;
+        StopAllCoroutines();
+        introBox.alpha = 0;
+        introText.enabled = false;
+        fadePanelImage.enabled = false;
+
     }
 
     // Update is called once per frame
     void Update () {
 		//This part is for moving
-		if (Input.GetKeyDown (KeyCode.DownArrow)) {
+		if (!controlsDisabled && Input.GetKeyDown (KeyCode.DownArrow)) {
             turnDown();
             tryMove();
-		} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
+		} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.UpArrow)) {
             turnUp();
             tryMove();
-		} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
+		} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.RightArrow)) {
             turnRight();
             tryMove();
-		} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+		} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.LeftArrow)) {
             turnLeft();
             tryMove();
 		}

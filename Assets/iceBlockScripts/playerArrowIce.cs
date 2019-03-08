@@ -29,6 +29,7 @@ public class playerArrowIce : MonoBehaviour {
 	public Vector2 predictedSquare;
 	private Vector2 predictedSquare_store;
 	private bool victorious;
+    private bool gotRocketBoots;
 
 	//UI for playing a new game
 	private Button yes;
@@ -98,6 +99,8 @@ public class playerArrowIce : MonoBehaviour {
     private string pathTrace;
 
     public AudioClip musicClip;
+    private AudioClip doorClose;
+    private AudioClip rocketBootsEngage;
     public AudioSource vicJingle;
     //Scene currentScene;
     public static string sceneName;
@@ -106,22 +109,29 @@ public class playerArrowIce : MonoBehaviour {
 
 	void Awake() {
 		victorious = false;
+        gotRocketBoots = false;
 		startTime = Time.time;
 		sessionStart_time = startTime;
 		prevActionEndTime = startTime;
 		prevMoveEndTime = startTime;
 		prevPushEndTime = startTime;
-	}
 
-	// Use this for initialization
-	void Start () {
+        doorClose = Resources.Load<AudioClip>("Audio/CloseDoor");
+        rocketBootsEngage = Resources.Load<AudioClip>("Audio/sfx_explosion_3");
+
+    }
+
+    // Use this for initialization
+    void Start () {
         vicJingle.clip = musicClip;
+        vicJingle.PlayOneShot(doorClose);
 
         //resultStr = "NEW_GAME,ice,";
         GameObject collectorObj = GameObject.Find("DataCollector");
         if (collectorObj != null)
         {
             dataCollector = collectorObj.GetComponent<DataCollector>();
+            dataCollector.gameQuit.AddListener(gameQuit);
         }
 
         upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
@@ -288,8 +298,11 @@ public class playerArrowIce : MonoBehaviour {
 
 		//Victory UI variables
 		//yes = GameObject.Find ("Yes").GetComponent<Button>();
-		no = GameObject.Find ("No").GetComponent<Button>();
-		victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
+        if(timer == null)
+        {
+            no = GameObject.Find("No").GetComponent<Button>();
+        }
+        victoryPanel = GameObject.Find ("Victory").GetComponent<Image>();
 		victoryText = GameObject.Find ("Congratulations").GetComponent<Text>();
 
 	}
@@ -364,27 +377,31 @@ public class playerArrowIce : MonoBehaviour {
 		//yes.interactable = true;
 		//yes.transform.Find("YesText").GetComponent<Text>().enabled = true;
 
-		no.GetComponent<Image>().enabled = true;
-		no.interactable = true;
-		no.transform.Find("NoText").GetComponent<Text>().enabled = true;
 
-		if(timer != null){
-			timer.GetComponent<Timer>().SetVictory();
-		}
-	}
+		if(timer == null){
+            no.GetComponent<Image>().enabled = true;
+            no.interactable = true;
+            no.transform.Find("NoText").GetComponent<Text>().enabled = true;
+		} else
+        {
+            timer.GetComponent<Timer>().SetVictory();
+        }
+    }
 
 	private void unDisplayOptions() {
 		victoryPanel.enabled = false;
 		victoryText.enabled = false;
 
-		//yes.GetComponent<Image>().enabled = false;
-		//yes.interactable = false;
-		//yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
+        //yes.GetComponent<Image>().enabled = false;
+        //yes.interactable = false;
+        //yes.transform.Find("YesText").GetComponent<Text>().enabled = false;
 
-		no.GetComponent<Image>().enabled = false;
-		no.interactable = false;
-		no.transform.Find("NoText").GetComponent<Text>().enabled = false;
-
+        if (timer == null)
+        {
+            no.GetComponent<Image>().enabled = false;
+            no.interactable = false;
+            no.transform.Find("NoText").GetComponent<Text>().enabled = false;
+        }
 	}
 
 	private string coordinatesToSquare(Vector2 coordinates) {
@@ -885,10 +902,7 @@ public class playerArrowIce : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        foreach(string s in victorySquare)
-        {
-            //print("Victory Square: " + s);
-        }
+
 		if(!victorious) {
 			if(victory()) {
                 if (dataCollector != null)
@@ -902,10 +916,12 @@ public class playerArrowIce : MonoBehaviour {
 				//resultStr +="OUTCOME,VICTORY,";
 				victories++;
 
-                if (dataCollector != null && timer != null) // timed level
+                if (timer != null) // timed level
                 {
                     // give player the Rocket Boots?
                     Debug.Log("Got the Rocket Boots!");
+                    gotRocketBoots = true;
+                    
 
                 } else if (dataCollector != null && timer == null) //non-timed level
                 {
@@ -947,9 +963,54 @@ public class playerArrowIce : MonoBehaviour {
 
 				}
 			}
-		}
+		} else if (gotRocketBoots)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+
+                StartCoroutine(blastThroughCeiling(1f)); // blast through ceiling and then fade to end demo
+                unDisplayOptions();
+            }
+        }
 
 	}
+
+    // called when DataCollector invokes gameQuit event
+    public void gameQuit()
+    {
+        disablePlayerControls();
+        //StopAllCoroutines();
+    }
+
+    IEnumerator blastThroughCeiling(float time)
+    {
+        turnDown();
+        float start, end;
+
+        start = 0.4F;
+        end = 1.0F;
+        float i = 0.0F;
+        float step = 1.0F / time;
+
+        vicJingle.PlayOneShot(rocketBootsEngage);
+
+        if (dataCollector != null)
+        {
+            dataCollector.doFadeToDemoFinished(1f, false);
+        }
+
+        while (i <= 1.0F)
+        {
+            i += step * Time.deltaTime;
+            Vector3 size = this.gameObject.transform.localScale;
+            size.x = Mathf.Lerp(start, end, i);
+            size.y = Mathf.Lerp(start, end, i);
+            this.gameObject.transform.localScale = size;
+            yield return new WaitForSeconds(step * Time.deltaTime);
+        }
+
+
+    }
 
 	private void push(iceBlock ice) {
 		string newLoc = ice.move();

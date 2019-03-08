@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Runtime.InteropServices;
+using UnityEngine.Events;
 
 
 public class DataCollector : MonoBehaviour {
@@ -32,6 +33,7 @@ public class DataCollector : MonoBehaviour {
     private List<Attempt> attempts;
 
     private int keysobtained = 0; // keep track of how many key fragments the player has won 
+    private int sceneChanges = 0;
 
     private static bool pressedP = false;
 
@@ -41,9 +43,13 @@ public class DataCollector : MonoBehaviour {
 
     public Text demoFinishedAltText;
 
+    public AudioSource musicSource;
+
     // public varaibles for hiding the level name texts after the player has completed the scene, default to false
     public static bool finishedIce, finishedIce2, finishedIce3, finishedIce4, finishedIce5, finishedIceTimed,
     finishedTile, finishedTile2, finishedTile3, finishedTileHard;
+
+    public UnityEvent gameQuit;
 
     private class Attempt
     {
@@ -133,6 +139,17 @@ public class DataCollector : MonoBehaviour {
     {
         Debug.Log("Finished Loading Scene " + scene.name);
         AddNewAttempt(scene.name);
+        sceneChanges++;
+
+        if (GameObject.Find("Timer") != null)
+        {
+            musicSource.mute = true;
+        }
+        else
+        {
+            musicSource.mute = false;
+        }
+
         GameObject hideHint;
         // detect if the player has finished any games, if so, close the door 
         if(!completedScenes.Contains(playerArrowIce.sceneName))
@@ -268,6 +285,11 @@ public class DataCollector : MonoBehaviour {
         totalAttempts++;
     }
 
+    public int getNumSceneChanges()
+    {
+        return sceneChanges;
+    }
+
     private Attempt getCurrentAttempt()
     {
         return attempts[totalAttempts];
@@ -333,12 +355,23 @@ public class DataCollector : MonoBehaviour {
 
     private IEnumerator fadeToDemoFinished(float seconds, bool playerInitiated)
     {
+        // invoke gameQuit method to tell all objects to stop all coroutines - especially Timer
+        // need victory jingle before audio source is turned off
+        // turn off background panel
+        gameQuit.Invoke();
+        
+        GameObject backgroundPanel = GameObject.Find("BackgroundPanel");
+        if(backgroundPanel != null)
+        {
+            backgroundPanel.SetActive(false);
+        }
         screenFader.fadeOut(seconds);
         yield return new WaitForSeconds(seconds);
 
         string allData;
         if (playerInitiated)
         {
+            getCurrentAttempt().outcome = "quit";
             demoFinishedAltText.enabled = true;
             yield return new WaitForSeconds(3f);
 
@@ -348,7 +381,8 @@ public class DataCollector : MonoBehaviour {
 
         } else
         {
-            demoFinishedText.enabled = true;
+            getCurrentAttempt().outcome = "finishedDemo";
+            demoFinishedAltText.enabled = true;
             yield return new WaitForSeconds(3f);
 
             allData = saveAllData();
@@ -397,7 +431,7 @@ public class DataCollector : MonoBehaviour {
             } else if(attempts[i].outcome.Equals("time"))
             {
                 numRanOutOfTime++;
-            } else
+            } else if (!attempts[i].outcome.Equals("quit") && !attempts[i].outcome.Equals("finishedDemo"))
             {
                 Debug.Log("ERROR: invalid outcome code in attempt " + i + " in level " + attempts[i].level + ": " + attempts[i].outcome);
             }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Timer : MonoBehaviour {
@@ -19,6 +20,7 @@ public class Timer : MonoBehaviour {
 	public playerArrowIce playerArrow;
 
     public AudioSource audioSource;
+    public AudioSource musicSource;
     public AudioClip backgroundMusic;
     public AudioClip sinisterMusic;
     private AudioClip countdownSound;
@@ -44,6 +46,7 @@ public class Timer : MonoBehaviour {
         if (collectorObj != null)
         {
             dataCollector = collectorObj.GetComponent<DataCollector>();
+            dataCollector.gameQuit.AddListener(gameQuit);
         }
 
         startIntroAndCountdown();
@@ -65,7 +68,7 @@ public class Timer : MonoBehaviour {
                 {
                     timerStarted = false;
                     timeRemaining.text = "Time Left:\n\n00:00";
-                    audioSource.Stop();
+                    musicSource.Stop();
                     audioSource.PlayOneShot(powerFailureSound);
                     TimeOut.SetActive(true);
                     if(dataCollector != null)
@@ -80,9 +83,9 @@ public class Timer : MonoBehaviour {
                     if(minutes <= 0 && sinisterMusicNotStarted)
                     {
                         sinisterMusicNotStarted = false;
-                        audioSource.Stop();
-                        audioSource.clip = sinisterMusic;
-                        audioSource.Play();
+                        musicSource.Stop();
+                        musicSource.clip = sinisterMusic;
+                        musicSource.Play();
                     }
                     timeRemaining.text = "Time Left:\n\n" + minutes.ToString("00") + ":" + seconds.ToString("00");
                 }
@@ -94,9 +97,9 @@ public class Timer : MonoBehaviour {
     public void startTimer()
     {
         timerStarted = true;
-        audioSource.Stop();
-        audioSource.clip = backgroundMusic;
-        audioSource.Play();
+        musicSource.Stop();
+        musicSource.clip = backgroundMusic;
+        musicSource.Play();
     }
 
     private void startIntroAndCountdown()
@@ -129,7 +132,7 @@ public class Timer : MonoBehaviour {
         }
         playerArrow.enablePlayerControls();
 
-        audioSource.Play();
+        musicSource.Play();
 
     }
 
@@ -164,8 +167,19 @@ public class Timer : MonoBehaviour {
         rrRectTimer.anchoredPosition = endPositionTimer;
     }
 
+    // called when gameQuit event is invoked from DataCollector
+    public void gameQuit()
+    {
+        StopAllCoroutines();
+        timerStarted = false;
+        musicSource.Stop();
+        countdownPanel.alpha = 0;
+    }
+
     public void SetVictory () {
 		victory = true;
+        timerStarted = false;
+        musicSource.Stop();
 	}
 
 	public void ResetTimer () {
@@ -173,9 +187,11 @@ public class Timer : MonoBehaviour {
 		victory = false;
 	}
 
+    // When Restart button is clicked after running out of time
 	public void Restart () {
         //TODO: see if this is being counted as a new attempt each time
-		playerArrow.newGame();
+        dataCollector.AddNewAttempt(SceneManager.GetActiveScene().name);
+        playerArrow.newGame();
 		TimeOut.SetActive(false);
         timeRemainingPanel.alpha = 0; //hide TimeRemainingPanel
 

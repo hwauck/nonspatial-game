@@ -35,7 +35,7 @@ public class playerArrowTile : MonoBehaviour {
 	// Data collection
 	string resultStr;
     private DataCollector dataCollector;
-
+    private bool controlsDisabled = false;
 
     private int plays;
 	private int victories; // don't reset
@@ -80,11 +80,15 @@ public class playerArrowTile : MonoBehaviour {
     public AudioClip musicClip_tile;
     public AudioSource vicJingle_tile;
 
+    private AudioClip doorClose;
+
     void Awake() {
 		victorious = false;
 		startTime = Time.time;
 		sessionStart_time = startTime;
 		prevMoveEndTime = startTime;
+
+        doorClose = Resources.Load<AudioClip>("Audio/CloseDoor");
 
 	}
 
@@ -92,11 +96,13 @@ public class playerArrowTile : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         vicJingle_tile.clip = musicClip_tile;
+        vicJingle_tile.PlayOneShot(doorClose);
 
         GameObject collectorObj = GameObject.Find("DataCollector");
         if (collectorObj != null)
         {
             dataCollector = collectorObj.GetComponent<DataCollector>();
+            dataCollector.gameQuit.AddListener(gameQuit);
         }
 
         upSprite = Resources.Load<Sprite>("player_astronaut/player-up");
@@ -376,7 +382,11 @@ public class playerArrowTile : MonoBehaviour {
 		SceneManager.LoadScene("start room");
 	}
 
+    public void gameQuit()
+    {
+        controlsDisabled = true;
 
+    }
 
 	// when the "Reset" button is clicked
 	public void reset() {
@@ -511,16 +521,16 @@ public class playerArrowTile : MonoBehaviour {
                 // else if{
                 //
                 // }
-            } else if (Input.GetKeyDown (KeyCode.DownArrow)) {
+            } else if (!controlsDisabled && Input.GetKeyDown (KeyCode.DownArrow)) {
 				turnDown ();
 				tryMove();
-			} else if (Input.GetKeyDown (KeyCode.UpArrow)) {
+			} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.UpArrow)) {
 				turnUp ();
 				tryMove();
-			} else if (Input.GetKeyDown (KeyCode.RightArrow)) {
+			} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.RightArrow)) {
 				turnRight ();
 				tryMove();
-			} else if (Input.GetKeyDown (KeyCode.LeftArrow)) {
+			} else if (!controlsDisabled && Input.GetKeyDown (KeyCode.LeftArrow)) {
 				turnLeft ();
 				tryMove();
 			}
