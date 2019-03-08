@@ -200,7 +200,7 @@ public class playerStartRoom : MonoBehaviour {
         } else if (otherCollider.gameObject.name.Equals("ToIce5"))
         {
             StartCoroutine(openDoorAndLoadLevel("ice_5"));
-        } else if (otherCollider.gameObject.name.Equals("ToTimedIce") /* && popupText2.isUnlocked*/)  // unlock IceTimed only if the player has found 9 key fragments
+        } else if (otherCollider.gameObject.name.Equals("ToTimedIce") && popupText2.isUnlocked)  // unlock IceTimed only if the player has found 9 key fragments
         {
             StartCoroutine(unlockDoorAndLoadLevel("ice_timed"));
         } else if (otherCollider.gameObject.name.Equals("ToTile1"))
